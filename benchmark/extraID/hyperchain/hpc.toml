@@ -1,0 +1,59 @@
+title = "GoSDK configuratoin file"
+
+namespace = "global"
+
+#发送重新连接请求间隔(/ms)
+reConnectTime = 10000
+
+[tx]
+    version = "2.4"
+
+[jsonRPC]
+    nodes = ["localhost"]
+    # JsonRpc connect port
+    ports = ["8081"]
+
+[webSocket]
+    # webSocket connect port
+    ports = ["10001"]
+
+[polling]
+    #重发次数
+    resendTime = 1
+    #第一次轮询时间间隔 unit /ms
+    firstPollingInterval = 200
+    #发送一次,第一次轮询的次数
+    firstPollingTimes = 50
+    #第二次轮询时间间隔 unit /ms
+    secondPollingInterval = 200
+    #发送一次,第二次轮询的次数
+    secondPollingTimes = 50
+
+#not support yet
+#
+#[privacy]
+#    #send Tcert during the request or not
+#    sendTcert = false
+#    #if sendTcert is true , you should add follow path.
+#    #the paths followed are relative to conf root path
+#    sdkcertPath = "certs/sdkcert.cert"
+#    sdkcertPrivPath = "certs/sdkcert.priv"
+#    uniquePubPath = "certs/unique.pub"
+#    uniquePrivPath = "certs/unique.priv"
+
+[security]
+    #Use Https
+    https = false
+    #If https is true, you shoule add follow properties
+    #the paths followed are relative to conf root path
+    tlsca = "certs/tls/tlsca.ca"
+    tlspeerCert = "certs/tls/tls_peer.cert"
+    tlspeerPriv = "certs/tls/tls_peer.priv"
+
+[log]
+    #设置日志输出门槛
+    #"CRITICAL","ERROR","WARNING","NOTICE","INFO","DEBUG",
+    log_level = "NOTICE"
+    #存放日志文件夹
+    log_dir = "../logs"
+
