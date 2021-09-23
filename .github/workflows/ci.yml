@@ -1,0 +1,51 @@
+name: CI
+on: [push,pull_request]
+jobs:
+  lint:
+    name: Golangci-lint
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up Go 1.15
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run golangci-lint
+        uses: Mushus/golangci-linter@v1
+
+      - name: Go report card
+        uses: creekorful/goreportcard-action@v1.0
+#      - name: Run Golangci-lint
+#        uses: golangci/golangci-lint-action@v2
+#        with:
+#          version: v1.29
+  test:
+    name: Unit Testing
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up Go 1.15
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+#      - name: Get failpoint
+#        run: |
+#          git clone https://github.com/pingcap/failpoint.git
+#          ls -al
+#          pwd
+#          cd failpoint/failpoint-ctl
+#          go build
+#          sudo cp failpoint-ctl $GOPATH/bin
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Enable failpoint
+        run: make test
+#      - name: Enable failpoint
+#        run : failpoint-ctl enable
+#      - name: Go Test
+#        run: go test -v ./...
+#      - name: Disable failpoint
+#        run: failpoint-ctl disable

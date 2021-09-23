@@ -1,0 +1,13 @@
+contract SetHash{
+    mapping(string => string) hashMap;
+
+
+    function setHash(string key,string value) returns(string){
+        hashMap[key] = value;
+        return (value);
+    }
+
+    function getHash(string key) returns(string){
+        return (hashMap[key]);
+    }
+}

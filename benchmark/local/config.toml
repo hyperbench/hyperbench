@@ -1,0 +1,27 @@
+[engine]
+rate = 10
+duration = "10m"
+cap = 10
+
+[client]
+script = "benchmark/local/script.lua"  # 脚本
+type = "flato"                         # 区块链类型
+config = "benchmark/local/hyperchain"  # 区块链SDK配置路径
+contract = "benchmark/local/contract"  # 合约目录路径
+args = []                              # 合约参数路径
+
+[client.options] # 客户端选项
+
+
+[recorder.log]
+dump=false
+dir="./logs"
+level="notice"
+
+[recorder.csv]
+dir="./csv"
+
+
+
+
+

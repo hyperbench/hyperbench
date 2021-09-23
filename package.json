@@ -1,0 +1,55 @@
+{
+  "name": "frigate",
+  "version": "1.0.2",
+  "description": "frigate is the performance test tool for hyperchain",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "standard-version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git.hyperchain.cn/hyperchain/hyperchain"
+  },
+  "keywords": [
+    "blockchain",
+    "hyperchain"
+  ],
+  "author": "Hyperchain Authors",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "cz-conventional-changelog": "^2.1.0",
+    "ghooks": "^2.0.2",
+    "standard-version": "^4.3.0",
+    "validate-commit-msg-smart": "^1.1.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    },
+    "ghooks": {
+      "commit-msg": "validate-commit-msg",
+      "pre-commit": "./.githooks/pre-commit"
+    },
+    "validate-commit-msg": {
+      "types": [
+        "feat",
+        "fix",
+        "revert",
+        "chore",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci"
+      ],
+      "warnOnFail": false,
+      "maxSubjectLength": 100,
+      "subjectPattern": ".+",
+      "subjectPatternErrorMsg": "subject does not match subject pattern, you should use one of [feat| fix| revert|chore| docs| style| refactor| perf| test| build| ci]",
+      "helpMessage": ""
+    }
+  }
+}

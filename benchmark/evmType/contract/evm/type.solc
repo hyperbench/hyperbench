@@ -1,0 +1,89 @@
+pragma solidity ^0.4.0;
+
+contract Type {
+    
+    function typeUint8(uint8 p1, uint8[] p2, uint8[3] p3) returns (uint8, uint8[], uint8[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeUint16(uint16 p1, uint16[] p2, uint16[3] p3) returns (uint16, uint16[], uint16[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeUint32(uint32 p1, uint32[] p2, uint32[3] p3) returns (uint32, uint32[], uint32[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeUint64(uint64 p1, uint64[] p2, uint64[3] p3) returns (uint64, uint64[], uint64[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeUint128(uint128 p1, uint128[] p2, uint128[3] p3) returns (uint128, uint128[], uint128[3]){
+        return (p1, p2, p3);
+    }
+    
+    function typeUint256(uint256 p1, uint256[] p2, uint256[3] p3) returns (uint256, uint256[], uint256[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt8(int8 p1, int8[] p2, int8[3] p3) returns (int8, int8[], int8[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt16(int16 p1, int16[] p2, int16[3] p3) returns (int16, int16[], int16[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt32(int32 p1, int32[] p2, int32[3] p3) returns (int32, int32[], int32[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt64(int64 p1, int64[] p2, int64[3] p3) returns (int64, int64[], int64[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt128(int128 p1, int128[] p2, int128[3] p3) returns (int128, int128[], int128[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeInt256(int256 p1, int256[] p2, int256[3] p3) returns (int256, int256[], int256[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBytes1(bytes1 p1, bytes1[] p2, bytes1[3] p3) returns (bytes1, bytes1[], bytes1[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBytes2(bytes2 p1, bytes2[] p2, bytes2[3] p3) returns (bytes2, bytes2[], bytes2[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBytes7(bytes7 p1, bytes7[] p2, bytes7[3] p3) returns (bytes7, bytes7[], bytes7[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBytes24(bytes24 p1, bytes24[] p2, bytes24[3] p3) returns (bytes24, bytes24[], bytes24[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBytes32(bytes32 p1, bytes32[] p2, bytes32[3] p3) returns (bytes32, bytes32[], bytes32[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeBool(bool p1, bool[] p2, bool[3] p3) returns (bool, bool[], bool[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeAddress(address p1, address[] p2, address[3] p3) returns (address, address[], address[3]){
+        return (p1, p2, p3);
+    }
+
+    function typeString(string p1) returns (string){
+        return (p1);
+    }
+
+    function typeBytes(bytes p1) returns (bytes){
+        return (p1);
+    }
+
+}
