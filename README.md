@@ -2,6 +2,8 @@
 
 hyperbench is a distributed stress testing tool, used to perform stress testing on blockchain platforms, written by go.
 
+detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%99%BD%E7%9A%AE%E4%B9%A6.pdf)
+
 ## Features
 
 -  flexible:  provide programmable use case extension based on Lua script and user hook provided by virtual machine.
@@ -73,5 +75,6 @@ Thank you for considering to help out with the source code! No matter it's a sys
 
 Please check the contributing guide for the full details.
 
+## License
 
-详情介绍：[白皮书](https://upload.hyperchain.cn/HyperBench%E7%99%BD%E7%9A%AE%E4%B9%A6.pdf)
+Hyperbench is currently under Apache 2.0 license. See the LICENSE file for details.
