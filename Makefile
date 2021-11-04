@@ -14,7 +14,7 @@ SKIP_DIR=benchmark
 branch=$(shell git rev-parse --abbrev-ref HEAD)
 commitID=$(shell git log --pretty=format:"%h" -1)
 date=$(shell date +%Y%m%d)
-importpath=github.com/ultramesh/frigate/cmd
+importpath=github.com/meshplus/hyperbench/cmd
 ldflags=-X ${importpath}.branch=${branch} -X ${importpath}.commitID=${commitID} -X ${importpath}.date=${date}
 
 # path
