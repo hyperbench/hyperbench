@@ -13,8 +13,8 @@ require (
 	github.com/hyperledger/fabric v1.4.3
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
-	github.com/hyperledger/fabric-sdk-go v1.0.0
-	github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric v0.0.0-20190822125948-d2b42602e52e
+	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20210927191040-3e3a3c6aeec9
+    github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric v0.0.0-20190822125948-d2b42602e52e
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.11
 	github.com/karrick/godirwalk v1.16.1 // indirect
