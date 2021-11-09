@@ -218,7 +218,7 @@ func (v *VM) Run(ctx common.TxContext) (*common.Result, error) {
 		return nil, err
 	}
 	val := v.vm.Get(-1)
-	v.vm.Pop(-1)
+	v.vm.Pop(1)
 
 	ud, ok := val.(*lua.LUserData)
 	if !ok {
