@@ -1,0 +1,27 @@
+[engine]
+rate = 10
+duration = "20s"
+cap = 5
+
+[client]
+script = "benchmark/ethTransfer/script.lua"  # 脚本
+type = "eth"                         # 区块链类型
+contract = "benchmark/ethTransfer/contract"  # 合约目录路径
+config = "/Users/shinygrey/go/src/github.com/meshplus/test/data"  # 区块链SDK配置路径
+account = "UTC--2021-11-08T06-40-13.429398000Z--3b2b643246666bfa1332257c13d0d1283736838d" #eth账户
+args = []                              # 合约参数路径
+
+[client.options] # 客户端选项
+
+[recorder.log]
+dump=false
+dir="./logs"
+level="debug"
+
+[recorder.csv]
+dir="./csv"
+
+
+
+
+

@@ -76,6 +76,7 @@ func (b *baseEngine) Run(callback Callback) {
 }
 
 func (b *baseEngine) schedule(callback Callback) {
+	b.timeoutCtx, b.cancelFunc = context.WithTimeout(context.Background(), b.Duration)
 	tick := time.NewTicker(b.interval)
 	defer func() {
 		tick.Stop()
