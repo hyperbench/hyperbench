@@ -30,89 +30,120 @@ import (
 
 //Contract contains the abi and bin files of contract
 type Contract struct {
-	ABI string
-	BIN string
+	ABI             string
+	BIN             string
+	parsedAbi       abi.ABI
+	contractAddress common.Address
 }
 
 //ETH the client of eth
 type ETH struct {
 	*base.BlockchainBase
-	ethClient       *ethclient.Client
-	privateKey      *ecdsa.PrivateKey
-	auth            *bind.TransactOpts
-	contractAddress common.Address
-	startBlock      uint64
-	contract        *Contract
+	ethClient  *ethclient.Client
+	privateKey *ecdsa.PrivateKey
+	publicKey  *ecdsa.PublicKey
+	auth       *bind.TransactOpts
+	startBlock uint64
+	contract   *Contract
 }
 
 //Msg contains message of context
 type Msg struct {
-	ContractAddress common.Address
-	StartBlock      uint64
+	Contract *Contract
 }
 
 // New use given blockchainBase create ETH.
 func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
+	log := fcom.GetLogger("eth")
 	ethClient, err := ethclient.Dial(viper.GetString(fcom.ClientConfigPath) + "/geth.ipc")
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 
 	privKey, _, err := KeystoreToPrivateKey(viper.GetString(fcom.ClientConfigPath)+"/keystore/"+viper.GetString(fcom.ClientAccount), "")
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 
 	privateKey, err := crypto.HexToECDSA(privKey)
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
+		log.Error("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 		return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	nonce, err := ethClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 
 	gasPrice, err := ethClient.SuggestGasPrice(context.Background())
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
-	chainID, _ := ethClient.NetworkID(context.Background())
-	auth, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	chainID, err := ethClient.NetworkID(context.Background())
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)     // in wei
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 	startBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
-	contract, _ := newContract()
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
 	client = &ETH{
 		BlockchainBase: blockchainBase,
 		ethClient:      ethClient,
 		privateKey:     privateKey,
+		publicKey:      publicKeyECDSA,
 		auth:           auth,
 		startBlock:     startBlock.Number.Uint64(),
-		contract:       contract,
 	}
-
 	return
 }
 func (e *ETH) DeployContract() error {
+	contractPath := viper.GetString(fcom.ClientContractPath)
+	if contractPath != "" {
+		var er error
+		e.contract, er = newContract()
+		if er != nil {
+			e.Logger.Error(er)
+			return er
+		}
+	} else {
+		return nil
+	}
 	parsed, err := abi.JSON(strings.NewReader(e.contract.ABI))
 	if err != nil {
+		e.Logger.Error(err)
 		return err
 	}
+	e.contract.parsedAbi = parsed
 	input := "1.0"
 	contractAddress, tx, instance, err := bind.DeployContract(e.auth, parsed, common.FromHex(e.contract.BIN), e.ethClient, input)
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
-	e.contractAddress = contractAddress
+	e.contract.contractAddress = contractAddress
 	e.Logger.Info("contractAddress:" + contractAddress.Hex())
 	e.Logger.Info("txHash:" + tx.Hash().Hex())
 	_ = instance
@@ -122,19 +153,8 @@ func (e *ETH) DeployContract() error {
 
 //Invoke invoke contract with funcName and args in eth network
 func (e *ETH) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *fcom.Result {
-	parsed, err := abi.JSON(strings.NewReader(e.contract.ABI))
-	if err != nil {
-		e.Logger.Error(err)
-		return nil
-	}
-	instance := bind.NewBoundContract(e.contractAddress, parsed, e.ethClient, e.ethClient, e.ethClient)
-	publicKey := e.privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		e.Logger.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	instance := bind.NewBoundContract(e.contract.contractAddress, e.contract.parsedAbi, e.ethClient, e.ethClient, e.ethClient)
+	fromAddress := crypto.PubkeyToAddress(*e.publicKey)
 	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		e.Logger.Error(err)
@@ -201,14 +221,7 @@ func (e *ETH) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 
 //Transfer transfer a amount of money from a account to the other one
 func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Result) {
-
-	publicKey := e.privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		e.Logger.Error("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fromAddress := crypto.PubkeyToAddress(*e.publicKey)
 	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		e.Logger.Error(err)
@@ -285,9 +298,23 @@ func (e *ETH) SetContext(context string) error {
 		return err
 	}
 
-	// set contract address
-	e.contractAddress = msg.ContractAddress
-	e.startBlock = msg.StartBlock
+	// set contractaddress,abi,publickey
+	e.contract = msg.Contract
+	if e.contract != nil {
+		parsed, err := abi.JSON(strings.NewReader(e.contract.ABI))
+		if err != nil {
+			e.Logger.Error(err)
+			return err
+		}
+		e.contract.parsedAbi = parsed
+	}
+	publicKey := e.privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		e.Logger.Error("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		return errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	}
+	e.publicKey = publicKeyECDSA
 	return nil
 }
 
@@ -300,8 +327,7 @@ func (e *ETH) ResetContext() error {
 func (e *ETH) GetContext() (string, error) {
 
 	msg := &Msg{
-		ContractAddress: e.contractAddress,
-		StartBlock:      e.startBlock,
+		Contract: e.contract,
 	}
 
 	bytes, error := json.Marshal(msg)
@@ -334,13 +360,15 @@ func (e *ETH) Option(options bcom.Option) error {
 }
 
 func KeystoreToPrivateKey(privateKeyFile, password string) (string, string, error) {
+	log := fcom.GetLogger("eth")
 	keyjson, err := ioutil.ReadFile(privateKeyFile)
 	if err != nil {
-		fmt.Println("read keyjson file failed：", err)
+		log.Errorf("read keyjson file failed：%v", err)
+		return "", "", err
 	}
 	unlockedKey, err := keystore.DecryptKey(keyjson, password)
 	if err != nil {
-
+		log.Error(err)
 		return "", "", err
 
 	}
