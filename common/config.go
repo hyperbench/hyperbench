@@ -45,7 +45,6 @@ const (
 	ClientContractPath     = "client.contract"
 	ClientContractArgsPath = "client.args"
 	ClientOptionPath       = "client.options"
-	ClientAccount          = "client.account"
 )
 
 // recorder

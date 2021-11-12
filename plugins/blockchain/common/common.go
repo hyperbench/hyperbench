@@ -1,7 +1,5 @@
 package common
 
-import "github.com/ethereum/go-ethereum/common"
-
 // Invoke define need filed for invoke contract.
 type Invoke struct {
 	Func string        `mapstructure:"func"`
@@ -33,6 +31,3 @@ type Statistic struct {
 	From int64 `mapstructure:"from"`
 	To   int64 `mapstructure:"to"`
 }
-
-// ContractAddress by eth
-var	ContractAddress common.Address

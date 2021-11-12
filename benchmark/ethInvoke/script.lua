@@ -1,7 +1,7 @@
 local case = testcase.new()
 function case:Run()
     local result = self.blockchain:Invoke({
-        func = "setItem",
+        func = "test",
         args = {"foo","bar"},
     })
     self.blockchain:Confirm(result)

@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"path"
 	"strings"
 
@@ -28,6 +27,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const gasLimit = 300000
+
 //Contract contains the abi and bin files of contract
 type Contract struct {
 	ABI             string
@@ -45,6 +46,7 @@ type ETH struct {
 	auth       *bind.TransactOpts
 	startBlock uint64
 	contract   *Contract
+	Accounts   map[string]*ecdsa.PublicKey
 }
 
 //Msg contains message of context
@@ -57,66 +59,87 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 	log := fcom.GetLogger("eth")
 	ethClient, err := ethclient.Dial(viper.GetString(fcom.ClientConfigPath) + "/geth.ipc")
 	if err != nil {
-		log.Error(err)
+		log.Errorf("ethClient initiate fialed: %v", err)
 		return nil, err
 	}
-
-	privKey, _, err := KeystoreToPrivateKey(viper.GetString(fcom.ClientConfigPath)+"/keystore/"+viper.GetString(fcom.ClientAccount), "")
+	// todo 没有账户可以生成
+	files, err := ioutil.ReadDir(viper.GetString(fcom.ClientConfigPath) + "/keystore")
 	if err != nil {
-		log.Error(err)
+		log.Errorf("access keystore failed:%v", err)
 		return nil, err
 	}
+	var (
+		PublicK  *ecdsa.PublicKey
+		PrivateK *ecdsa.PrivateKey
+	)
+	accounts := make(map[string]*ecdsa.PublicKey)
+	for i, file := range files {
+		fileName := file.Name()
+		account := fileName[strings.LastIndex(fileName, "-")+1:]
+		privKey, _, err := KeystoreToPrivateKey(viper.GetString(fcom.ClientConfigPath)+"/keystore/"+fileName, "")
+		if err != nil {
+			log.Errorf("access account file failed: %v", err)
+			return nil, err
+		}
 
-	privateKey, err := crypto.HexToECDSA(privKey)
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Error("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-		return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		privateKey, err := crypto.HexToECDSA(privKey)
+		if err != nil {
+			log.Errorf("privatekey encode failed %v ", err)
+			return nil, err
+		}
+		publicKey := privateKey.Public()
+		publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+		if !ok {
+			log.Errorf("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+			return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		}
+		accounts[account] = publicKeyECDSA
+		if i == 0 {
+			PublicK = publicKeyECDSA
+			PrivateK = privateKey
+		}
 	}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fromAddress := crypto.PubkeyToAddress(*PublicK)
 	nonce, err := ethClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("pending nonce failed: %v", err)
 		return nil, err
 	}
 
 	gasPrice, err := ethClient.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Error(err)
+		log.Errorf("generate gasprice failed: %v", err)
 		return nil, err
 	}
 	chainID, err := ethClient.NetworkID(context.Background())
 	if err != nil {
-		log.Error(err)
+		log.Errorf("get chainID failed: %v", err)
 		return nil, err
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	auth, err := bind.NewKeyedTransactorWithChainID(PrivateK, chainID)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("generate transaction options failed: %v", err)
 		return nil, err
 	}
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
+	auth.Value = big.NewInt(0)       // in wei
+	auth.GasLimit = uint64(gasLimit) // in units
 	auth.GasPrice = gasPrice
 	startBlock, err := ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("get number of headerblock failed: %v", err)
 		return nil, err
 	}
+
 	client = &ETH{
 		BlockchainBase: blockchainBase,
 		ethClient:      ethClient,
-		privateKey:     privateKey,
-		publicKey:      publicKeyECDSA,
+		privateKey:     PrivateK,
+		publicKey:      PublicK,
 		auth:           auth,
 		startBlock:     startBlock.Number.Uint64(),
+		Accounts:       accounts,
 	}
 	return
 }
@@ -126,7 +149,7 @@ func (e *ETH) DeployContract() error {
 		var er error
 		e.contract, er = newContract()
 		if er != nil {
-			e.Logger.Error(er)
+			e.Logger.Errorf("initiate contract failed: %v", er)
 			return er
 		}
 	} else {
@@ -134,57 +157,84 @@ func (e *ETH) DeployContract() error {
 	}
 	parsed, err := abi.JSON(strings.NewReader(e.contract.ABI))
 	if err != nil {
-		e.Logger.Error(err)
+		e.Logger.Errorf("decode abi of contract failed: %v", err)
 		return err
 	}
 	e.contract.parsedAbi = parsed
 	input := "1.0"
-	contractAddress, tx, instance, err := bind.DeployContract(e.auth, parsed, common.FromHex(e.contract.BIN), e.ethClient, input)
+	contractAddress, tx, _, err := bind.DeployContract(e.auth, parsed, common.FromHex(e.contract.BIN), e.ethClient, input)
 	if err != nil {
-		e.Logger.Fatal(err)
+		e.Logger.Errorf("deploycontract failed: %v", err)
 	}
 	e.contract.contractAddress = contractAddress
 	e.Logger.Info("contractAddress:" + contractAddress.Hex())
 	e.Logger.Info("txHash:" + tx.Hash().Hex())
-	_ = instance
 
 	return nil
 }
 
 //Invoke invoke contract with funcName and args in eth network
 func (e *ETH) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *fcom.Result {
+	buildTime := time.Now().UnixNano()
 	instance := bind.NewBoundContract(e.contract.contractAddress, e.contract.parsedAbi, e.ethClient, e.ethClient, e.ethClient)
 	fromAddress := crypto.PubkeyToAddress(*e.publicKey)
 	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		e.Logger.Error(err)
-	}
-
-	gasPrice, err := e.ethClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		e.Logger.Error(err)
-	}
-	chainID, _ := e.ethClient.NetworkID(context.Background())
-	auth, _ := bind.NewKeyedTransactorWithChainID(e.privateKey, chainID)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-
-	startTime := time.Now().UnixNano()
-	tx, err := instance.Transact(auth, invoke.Func, invoke.Args...)
-	if err != nil {
-		e.Logger.Error(err)
-	}
-	endTime := time.Now().UnixNano()
 	if err != nil {
 		return &fcom.Result{
 			Label:     invoke.Func,
 			UID:       fcom.InvalidUID,
 			Ret:       []interface{}{},
 			Status:    fcom.Failure,
-			BuildTime: startTime,
-			SendTime:  endTime,
+			BuildTime: buildTime,
+		}
+	}
+
+	gasPrice, err := e.ethClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return &fcom.Result{
+			Label:     invoke.Func,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+	chainID, err := e.ethClient.NetworkID(context.Background())
+	if err != nil {
+		return &fcom.Result{
+			Label:     invoke.Func,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+	auth, err := bind.NewKeyedTransactorWithChainID(e.privateKey, chainID)
+	if err != nil {
+		return &fcom.Result{
+			Label:     invoke.Func,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)       // in wei
+	auth.GasLimit = uint64(gasLimit) // in units
+	auth.GasPrice = gasPrice
+
+	tx, err := instance.Transact(auth, invoke.Func, invoke.Args...)
+	sendTime := time.Now().UnixNano()
+	if err != nil {
+		e.Logger.Errorf("invoke error: %v", err)
+		return &fcom.Result{
+			Label:     invoke.Func,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+			SendTime:  sendTime,
 		}
 	}
 	ret := &fcom.Result{
@@ -192,8 +242,8 @@ func (e *ETH) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *fcom.Result {
 		UID:       tx.Hash(),
 		Ret:       []interface{}{tx.Data()},
 		Status:    fcom.Success,
-		BuildTime: startTime,
-		SendTime:  endTime,
+		BuildTime: buildTime,
+		SendTime:  sendTime,
 	}
 
 	return ret
@@ -211,7 +261,7 @@ func (e *ETH) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 	tx, _, err := e.ethClient.TransactionByHash(context.Background(), result.UID.(common.Hash))
 	result.ConfirmTime = time.Now().UnixNano()
 	if err != nil || tx == nil {
-		e.Logger.Error("invoke failed: %v", err)
+		e.Logger.Errorf("query failed: %v", err)
 		result.Status = fcom.Unknown
 		return result
 	}
@@ -221,49 +271,70 @@ func (e *ETH) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 
 //Transfer transfer a amount of money from a account to the other one
 func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Result) {
-	fromAddress := crypto.PubkeyToAddress(*e.publicKey)
+	buildTime := time.Now().UnixNano()
+	//todo 如果本地没有账户是否可以生成
+	fromAddress := crypto.PubkeyToAddress(*e.Accounts[args.From])
 	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
-		e.Logger.Error(err)
-	}
-
-	value := big.NewInt(args.Amount) // in wei (1 eth)
-	gasLimit := uint64(21000)        // in units
-	gasPrice, err := e.ethClient.SuggestGasPrice(context.Background())
-	if err != nil {
-		e.Logger.Error(err)
-	}
-
-	toAddress := common.HexToAddress(args.To)
-	var data []byte
-	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
-
-	chainID, err := e.ethClient.NetworkID(context.Background())
-	if err != nil {
-		e.Logger.Error(err)
-	}
-
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), e.privateKey)
-	if err != nil {
-		e.Logger.Error(err)
-	}
-
-	startTime := time.Now().UnixNano()
-	err = e.ethClient.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		e.Logger.Error(err)
-	}
-	endTime := time.Now().UnixNano()
-
-	if err != nil {
-		e.Logger.Error(err)
 		return &fcom.Result{
 			Label:     fcom.BuiltinTransferLabel,
 			UID:       fcom.InvalidUID,
 			Ret:       []interface{}{},
 			Status:    fcom.Failure,
-			BuildTime: startTime,
-			SendTime:  endTime,
+			BuildTime: buildTime,
+		}
+	}
+
+	value := big.NewInt(args.Amount) // in wei (1 eth)
+	gasLimit := uint64(gasLimit)     // in units
+	gasPrice, err := e.ethClient.SuggestGasPrice(context.Background())
+	if err != nil {
+		return &fcom.Result{
+			Label:     fcom.BuiltinTransferLabel,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+
+	toAddress := common.HexToAddress(args.To)
+	data := []byte(args.Extra)
+	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
+
+	chainID, err := e.ethClient.NetworkID(context.Background())
+	if err != nil {
+		return &fcom.Result{
+			Label:     fcom.BuiltinTransferLabel,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), e.privateKey)
+	if err != nil {
+		return &fcom.Result{
+			Label:     fcom.BuiltinTransferLabel,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+		}
+	}
+
+	err = e.ethClient.SendTransaction(context.Background(), signedTx)
+	sendTime := time.Now().UnixNano()
+	if err != nil {
+		e.Logger.Errorf("transfer error: %v", err)
+		return &fcom.Result{
+			Label:     fcom.BuiltinTransferLabel,
+			UID:       fcom.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    fcom.Failure,
+			BuildTime: buildTime,
+			SendTime:  sendTime,
 		}
 	}
 
@@ -272,8 +343,8 @@ func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Res
 		UID:       signedTx.Hash(),
 		Ret:       []interface{}{tx.Data()},
 		Status:    fcom.Success,
-		BuildTime: startTime,
-		SendTime:  endTime,
+		BuildTime: buildTime,
+		SendTime:  sendTime,
 	}
 
 	return ret
@@ -283,16 +354,13 @@ func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Res
 func (e *ETH) SetContext(context string) error {
 	e.Logger.Debugf("prepare msg: %v", context)
 	msg := &Msg{}
-	var (
-		err error
-	)
 
 	if context == "" {
 		e.Logger.Infof("Prepare nothing")
 		return nil
 	}
 
-	err = json.Unmarshal([]byte(context), msg)
+	err := json.Unmarshal([]byte(context), msg)
 	if err != nil {
 		e.Logger.Errorf("can not unmarshal msg: %v \n err: %v", context, err)
 		return err
@@ -303,7 +371,7 @@ func (e *ETH) SetContext(context string) error {
 	if e.contract != nil {
 		parsed, err := abi.JSON(strings.NewReader(e.contract.ABI))
 		if err != nil {
-			e.Logger.Error(err)
+			e.Logger.Errorf("decode abi of contract failed: %v", err)
 			return err
 		}
 		e.contract.parsedAbi = parsed
@@ -330,12 +398,13 @@ func (e *ETH) GetContext() (string, error) {
 		Contract: e.contract,
 	}
 
-	bytes, error := json.Marshal(msg)
-	if error != nil {
-		fmt.Println(error)
+	bytes, err := json.Marshal(msg)
+	if err != nil {
+		e.Logger.Errorf("marshal msg failed: %v", err)
+		return "", err
 	}
 
-	return string(bytes), error
+	return string(bytes), err
 }
 
 //Statistic statistic remote node performance
@@ -344,8 +413,8 @@ func (e *ETH) Statistic(statistic bcom.Statistic) (*fcom.RemoteStatistic, error)
 	from, to := statistic.From, statistic.To
 
 	statisticData, err := GetTPS(e, from, to)
-
 	if err != nil {
+		e.Logger.Errorf("getTPS failed: %v", err)
 		return &fcom.RemoteStatistic{
 			Start: from,
 			End:   to,
@@ -368,7 +437,7 @@ func KeystoreToPrivateKey(privateKeyFile, password string) (string, string, erro
 	}
 	unlockedKey, err := keystore.DecryptKey(keyjson, password)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("decryptKey failed: %v", err)
 		return "", "", err
 
 	}
