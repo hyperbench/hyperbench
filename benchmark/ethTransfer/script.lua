@@ -1,5 +1,4 @@
 local case = testcase.new()
-
 function case:Run()
     local ret = case.blockchain:Transfer({
         from = "74d366e0649a91395bb122c005917644382b9452",
@@ -7,7 +6,7 @@ function case:Run()
         amount = 100,
         extra = "11",
     })
-    self.blockchain:Confirm(ret)
+    --self.blockchain:Confirm(ret)
     return ret
 end
 

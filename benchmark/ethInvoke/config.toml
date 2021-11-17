@@ -1,12 +1,14 @@
 [engine]
-rate = 10
+rate = 100
 duration = "10s"
-cap = 5
+cap = 10
+urls = ["localhost:8080","localhost:8085","localhost:8082"]
+
 [client]
 script = "benchmark/ethInvoke/script.lua"  # 脚本
 type = "eth"                         # 区块链类型
 contract = "benchmark/ethInvoke/contract"  # 合约目录路径
-config = "/Users/shinygrey/go/src/github.com/meshplus/test/data"  # 区块链SDK配置路径
+config = "benchmark/ethInvoke/eth"  # 区块链SDK配置路径
 args = []                              # 合约参数路径
 
 [client.options] # 客户端选项

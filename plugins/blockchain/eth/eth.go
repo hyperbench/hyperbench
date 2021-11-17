@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"os"
 	"path"
 	"strings"
 
@@ -47,6 +48,12 @@ type ETH struct {
 	startBlock uint64
 	contract   *Contract
 	Accounts   map[string]*ecdsa.PublicKey
+	round      uint64
+	nonce      uint64
+	engineCap  uint64
+	workerNum  uint64
+	wkIdx      uint64
+	vmIdx      uint64
 }
 
 //Msg contains message of context
@@ -57,12 +64,17 @@ type Msg struct {
 // New use given blockchainBase create ETH.
 func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 	log := fcom.GetLogger("eth")
-	ethClient, err := ethclient.Dial(viper.GetString(fcom.ClientConfigPath) + "/geth.ipc")
+	ethConfig, err := os.Open(viper.GetString(fcom.ClientConfigPath) + "/eth.toml")
+	if err != nil {
+		log.Errorf("load eth configuration fialed: %v", err)
+		return nil, err
+	}
+	viper.MergeConfig(ethConfig)
+	ethClient, err := ethclient.Dial("http://" + viper.GetString("rpc.node") + ":" + viper.GetString("rpc.port"))
 	if err != nil {
 		log.Errorf("ethClient initiate fialed: %v", err)
 		return nil, err
 	}
-	// todo 没有账户可以生成
 	files, err := ioutil.ReadDir(viper.GetString(fcom.ClientConfigPath) + "/keystore")
 	if err != nil {
 		log.Errorf("access keystore failed:%v", err)
@@ -131,7 +143,12 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 		log.Errorf("get number of headerblock failed: %v", err)
 		return nil, err
 	}
-
+	workerNum := uint64(len(viper.GetStringSlice(fcom.EngineURLsPath)))
+	if workerNum == 0 {
+		workerNum = 1
+	}
+	vmIdx := uint64(blockchainBase.Options["vmIdx"].(int64))
+	wkIdx := uint64(blockchainBase.Options["wkIdx"].(int64))
 	client = &ETH{
 		BlockchainBase: blockchainBase,
 		ethClient:      ethClient,
@@ -140,6 +157,12 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 		auth:           auth,
 		startBlock:     startBlock.Number.Uint64(),
 		Accounts:       accounts,
+		round:          0,
+		nonce:          nonce,
+		engineCap:      viper.GetUint64(fcom.EngineCapPath),
+		workerNum:      workerNum,
+		vmIdx:          vmIdx,
+		wkIdx:          wkIdx,
 	}
 	return
 }
@@ -169,7 +192,6 @@ func (e *ETH) DeployContract() error {
 	e.contract.contractAddress = contractAddress
 	e.Logger.Info("contractAddress:" + contractAddress.Hex())
 	e.Logger.Info("txHash:" + tx.Hash().Hex())
-
 	return nil
 }
 
@@ -177,18 +199,8 @@ func (e *ETH) DeployContract() error {
 func (e *ETH) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *fcom.Result {
 	buildTime := time.Now().UnixNano()
 	instance := bind.NewBoundContract(e.contract.contractAddress, e.contract.parsedAbi, e.ethClient, e.ethClient, e.ethClient)
-	fromAddress := crypto.PubkeyToAddress(*e.publicKey)
-	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		return &fcom.Result{
-			Label:     invoke.Func,
-			UID:       fcom.InvalidUID,
-			Ret:       []interface{}{},
-			Status:    fcom.Failure,
-			BuildTime: buildTime,
-		}
-	}
-
+	nonce := e.nonce + (e.wkIdx+e.round*e.workerNum)*(e.engineCap/e.workerNum) + e.vmIdx + 1
+	e.round++
 	gasPrice, err := e.ethClient.SuggestGasPrice(context.Background())
 	if err != nil {
 		return &fcom.Result{
@@ -272,18 +284,8 @@ func (e *ETH) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 //Transfer transfer a amount of money from a account to the other one
 func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Result) {
 	buildTime := time.Now().UnixNano()
-	//todo 如果本地没有账户是否可以生成
-	fromAddress := crypto.PubkeyToAddress(*e.Accounts[args.From])
-	nonce, err := e.ethClient.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		return &fcom.Result{
-			Label:     fcom.BuiltinTransferLabel,
-			UID:       fcom.InvalidUID,
-			Ret:       []interface{}{},
-			Status:    fcom.Failure,
-			BuildTime: buildTime,
-		}
-	}
+	nonce := e.nonce + (e.wkIdx+e.round*e.workerNum)*(e.engineCap/e.workerNum) + e.vmIdx
+	e.round++
 
 	value := big.NewInt(args.Amount) // in wei (1 eth)
 	gasLimit := uint64(gasLimit)     // in units
