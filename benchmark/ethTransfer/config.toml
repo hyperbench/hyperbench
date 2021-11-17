@@ -1,9 +1,7 @@
 [engine]
-rate = 100
+rate = 10
 duration = "10s"
-cap = 10
-urls = ["localhost:8080","localhost:8085","localhost:8082"]
-
+cap = 1
 
 [client]
 script = "benchmark/ethTransfer/script.lua"  # 脚本

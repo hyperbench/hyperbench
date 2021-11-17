@@ -47,7 +47,7 @@ type ETH struct {
 	auth       *bind.TransactOpts
 	startBlock uint64
 	contract   *Contract
-	Accounts   map[string]*ecdsa.PublicKey
+	Accounts   map[string]*ecdsa.PrivateKey
 	round      uint64
 	nonce      uint64
 	engineCap  uint64
@@ -84,7 +84,7 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 		PublicK  *ecdsa.PublicKey
 		PrivateK *ecdsa.PrivateKey
 	)
-	accounts := make(map[string]*ecdsa.PublicKey)
+	accounts := make(map[string]*ecdsa.PrivateKey)
 	for i, file := range files {
 		fileName := file.Name()
 		account := fileName[strings.LastIndex(fileName, "-")+1:]
@@ -105,7 +105,7 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 			log.Errorf("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 			return nil, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 		}
-		accounts[account] = publicKeyECDSA
+		accounts[account] = privateKey
 		if i == 0 {
 			PublicK = publicKeyECDSA
 			PrivateK = privateKey
@@ -315,7 +315,7 @@ func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Res
 		}
 	}
 
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), e.privateKey)
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), e.Accounts[args.From])
 	if err != nil {
 		return &fcom.Result{
 			Label:     fcom.BuiltinTransferLabel,
