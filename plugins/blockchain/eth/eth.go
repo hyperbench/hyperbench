@@ -251,7 +251,7 @@ func (e *ETH) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *fcom.Result {
 	}
 	ret := &fcom.Result{
 		Label:     invoke.Func,
-		UID:       tx.Hash(),
+		UID:       tx.Hash().String(),
 		Ret:       []interface{}{tx.Data()},
 		Status:    fcom.Success,
 		BuildTime: buildTime,
@@ -270,7 +270,7 @@ func (e *ETH) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 		result.Label == fcom.InvalidLabel {
 		return result
 	}
-	tx, _, err := e.ethClient.TransactionByHash(context.Background(), result.UID.(common.Hash))
+	tx, _, err := e.ethClient.TransactionByHash(context.Background(), common.HexToHash(result.UID))
 	result.ConfirmTime = time.Now().UnixNano()
 	if err != nil || tx == nil {
 		e.Logger.Errorf("query failed: %v", err)
@@ -342,7 +342,7 @@ func (e *ETH) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.Res
 
 	ret := &fcom.Result{
 		Label:     fcom.BuiltinTransferLabel,
-		UID:       signedTx.Hash(),
+		UID:       signedTx.Hash().String(),
 		Ret:       []interface{}{tx.Data()},
 		Status:    fcom.Success,
 		BuildTime: buildTime,

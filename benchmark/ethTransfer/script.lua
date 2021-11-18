@@ -6,7 +6,7 @@ function case:Run()
         amount = 100,
         extra = "11",
     })
-    --self.blockchain:Confirm(ret)
+    self.blockchain:Confirm(ret)
     return ret
 end
 

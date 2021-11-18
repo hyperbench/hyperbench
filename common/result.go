@@ -26,7 +26,7 @@ type Result struct {
 	// Label is the group name of sent transaction
 	Label string `mapstructure:"label"`
 	// UID is the unique id of sent transaction
-	UID interface{} `mapstructure:"uid"`
+	UID string `mapstructure:"uid"`
 	// BuildTime is the client start time when client constructs transaction
 	BuildTime int64 `mapstructure:"build"`
 	// SendTime is the client time when client receives transaction response

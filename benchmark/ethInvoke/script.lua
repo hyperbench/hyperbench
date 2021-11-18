@@ -4,7 +4,7 @@ function case:Run()
         func = "test",
         args = {"foo","bar"},
     })
-    --self.blockchain:Confirm(result)
+    self.blockchain:Confirm(result)
     return result
 end
 return case

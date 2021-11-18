@@ -205,7 +205,7 @@ func (c *Client) Confirm(result *fcom.Result, ops ...bcom.Option) *fcom.Result {
 	}
 
 	// poll
-	txReceipt, stdErr, got := c.rpcClient.GetTxReceiptByPolling(result.UID.(string), false)
+	txReceipt, stdErr, got := c.rpcClient.GetTxReceiptByPolling(result.UID, false)
 	result.ConfirmTime = time.Now().UnixNano()
 	if stdErr != nil || !got {
 		c.Logger.Errorf("invoke failed: %v", stdErr)

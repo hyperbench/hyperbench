@@ -138,16 +138,16 @@ func (l *LocalWorker) runEngine() {
 
 func (l *LocalWorker) asyncJob() {
 	v := l.pool.Pop()
-	if v == nil {
-		// if worker can not get vm from pool, just shortcut
-		l.wg.Done()
-		return
-	}
-
 	defer func() {
-		l.pool.Push(v)
+		if v != nil {
+			l.pool.Push(v)
+		}
 		l.wg.Done()
 	}()
+	if v == nil {
+		// if worker can not get vm from pool, just shortcut
+		return
+	}
 
 	res, err := v.Run(common.TxContext{
 		Context: l.ctx,
