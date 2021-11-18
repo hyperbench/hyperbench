@@ -3,6 +3,7 @@ package lua
 
 import (
 	"errors"
+
 	"github.com/meshplus/hyperbench/common"
 	"github.com/meshplus/hyperbench/plugins/blockchain"
 	base2 "github.com/meshplus/hyperbench/plugins/blockchain/base"
@@ -249,7 +250,10 @@ func (v *VM) setPlugins(table *lua.LTable) (err error) {
 	options := viper.GetStringMap(common.ClientOptionPath)
 	contractPath := viper.GetString(common.ClientContractPath)
 	args, _ := viper.Get(common.ClientContractArgsPath).([]interface{})
-
+	if clientType == "eth" {
+		options["vmIdx"] = v.index.VM
+		options["wkIdx"] = v.index.Worker
+	}
 	v.client, err = blockchain.NewBlockchain(base2.ClientConfig{
 		ClientType:   clientType,
 		ConfigPath:   clientConfigPath,

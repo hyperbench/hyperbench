@@ -3,6 +3,10 @@ package hyperchain
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+	"time"
+
 	"github.com/meshplus/gosdk/abi"
 	"github.com/meshplus/gosdk/common"
 	"github.com/meshplus/gosdk/hvm"
@@ -13,9 +17,6 @@ import (
 	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
-	"reflect"
-	"strings"
-	"time"
 )
 
 // Client the implementation of  client.Blockchain
@@ -405,7 +406,9 @@ func (c *Client) GetContext() (string, error) {
 	msg := Msg{
 		Contract: c.contract.ContractRaw,
 	}
+
 	bytes, err = json.Marshal(msg)
+
 	return string(bytes), err
 }
 

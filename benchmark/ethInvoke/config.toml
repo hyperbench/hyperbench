@@ -1,0 +1,26 @@
+[engine]
+rate = 10
+duration = "10s"
+cap = 1
+
+[client]
+script = "benchmark/ethInvoke/script.lua"  # 脚本
+type = "eth"                         # 区块链类型
+contract = "benchmark/ethInvoke/contract"  # 合约目录路径
+config = "benchmark/ethInvoke/eth"  # 区块链SDK配置路径
+args = []                              # 合约参数路径
+
+[client.options] # 客户端选项
+
+[recorder.log]
+dump=false
+dir="./logs"
+level="debug"
+
+[recorder.csv]
+dir="./csv"
+
+
+
+
+

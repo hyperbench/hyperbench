@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"sync"
 	"time"
 )
 
@@ -34,6 +35,8 @@ type BaseEngineConfig struct {
 	Rate int64 `mapstructure:"rate"`
 	// Duration engine run duration.
 	Duration time.Duration `mapstructure:"duration"`
+	// Wg Semaphore of localWorker
+	Wg *sync.WaitGroup
 }
 
 type baseEngine struct {
@@ -76,6 +79,7 @@ func (b *baseEngine) Run(callback Callback) {
 }
 
 func (b *baseEngine) schedule(callback Callback) {
+	b.timeoutCtx, b.cancelFunc = context.WithTimeout(context.Background(), b.Duration)
 	tick := time.NewTicker(b.interval)
 	defer func() {
 		tick.Stop()
@@ -90,6 +94,7 @@ func (b *baseEngine) schedule(callback Callback) {
 			return
 		case <-tick.C:
 			for i = 0; i < b.batch; i++ {
+				b.Wg.Add(1)
 				go callback()
 			}
 		}

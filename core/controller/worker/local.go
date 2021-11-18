@@ -2,14 +2,15 @@ package worker
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/meshplus/hyperbench/common"
 	"github.com/meshplus/hyperbench/core/collector"
 	"github.com/meshplus/hyperbench/core/engine"
 	"github.com/meshplus/hyperbench/core/vmpool"
 	"github.com/meshplus/hyperbench/vm"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 // LocalWorker is the local Worker implement
@@ -38,11 +39,18 @@ type LocalWorkerConfig struct {
 
 // NewLocalWorker create LocalWorker.
 func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
-
+	localWorker := LocalWorker{
+		collector: collector.NewTDigestSummaryCollector(),
+		resultCh:  make(chan *common.Result, 1024),
+		done:      make(chan struct{}),
+		colReq:    make(chan struct{}),
+		colRet:    make(chan collector.Collector),
+	}
 	// init engine
 	eg := engine.NewEngine(engine.BaseEngineConfig{
 		Rate:     config.Rate,
 		Duration: config.Duration,
+		Wg:       &localWorker.wg,
 	})
 
 	// init vm pool
@@ -57,20 +65,14 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 		TxIdx:     -1,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
+	localWorker.conf = config
+	localWorker.eg = eg
+	localWorker.pool = pool
+	localWorker.idx = idx
+	localWorker.ctx = ctx
+	localWorker.cancel = cancel
 
-	return &LocalWorker{
-		conf:      config,
-		eg:        eg,
-		pool:      pool,
-		collector: collector.NewTDigestSummaryCollector(),
-		idx:       idx,
-		ctx:       ctx,
-		cancel:    cancel,
-		resultCh:  make(chan *common.Result, 1024),
-		done:      make(chan struct{}),
-		colReq:    make(chan struct{}),
-		colRet:    make(chan collector.Collector),
-	}, nil
+	return &localWorker, nil
 }
 
 //func engineCreator(t engine.Type) engine
@@ -127,7 +129,6 @@ func (l *LocalWorker) runCollector() {
 }
 
 func (l *LocalWorker) runEngine() {
-
 	l.eg.Run(l.asyncJob)
 
 	// close all engines while Do end to ensure all func has been done
@@ -137,16 +138,16 @@ func (l *LocalWorker) runEngine() {
 
 func (l *LocalWorker) asyncJob() {
 	v := l.pool.Pop()
+	defer func() {
+		if v != nil {
+			l.pool.Push(v)
+		}
+		l.wg.Done()
+	}()
 	if v == nil {
 		// if worker can not get vm from pool, just shortcut
 		return
 	}
-	l.wg.Add(1)
-
-	defer func() {
-		l.pool.Push(v)
-		l.wg.Done()
-	}()
 
 	res, err := v.Run(common.TxContext{
 		Context: l.ctx,
@@ -156,7 +157,6 @@ func (l *LocalWorker) asyncJob() {
 		return
 	}
 	l.resultCh <- res
-	return
 }
 
 func (l *LocalWorker) atomicAddIndex() (idx common.TxIndex) {
