@@ -2,14 +2,14 @@ package recorder
 
 import (
 	"encoding/csv"
-	"fmt"
+	"os"
+	"path"
+	"time"
+
 	"github.com/meshplus/hyperbench/common"
 	"github.com/meshplus/hyperbench/core/utils"
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 // Recorder define the service a recorder need provide.
@@ -39,12 +39,19 @@ func NewRecorder() Recorder {
 		if dirPath == "" {
 			dirPath = "./csv"
 		}
-
-		t := time.Now()
-		fileName := fmt.Sprintf("%s.csv", t.Format("2006-12-12-23:59:59"))
-		filePath := filepath.Join(dirPath, fileName)
-		csvFile, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
-		csvPath = filePath
+		_, err := os.Stat(dirPath)
+		if err != nil && !os.IsExist(err) {
+			err := os.MkdirAll(dirPath, 0777)
+			if err != nil {
+				logger.Errorf("make csv dirpath error: %v", err)
+			}
+		}
+		fileName := path.Join(dirPath, time.Now().Format("2006-01-02-15:04:05")+".csv")
+		csvFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			logger.Errorf("open file error: %v", err)
+		}
+		csvPath = fileName
 		if err == nil {
 			ps = append(ps, newCSVProcessor(csvFile))
 		}
@@ -133,7 +140,6 @@ func (p *logProcessor) logData(t string, data *common.Data) {
 }
 
 func (p *logProcessor) release() {
-	return
 }
 
 type csvProcessor struct {

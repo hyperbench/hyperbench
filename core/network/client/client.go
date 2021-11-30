@@ -3,13 +3,6 @@ package client
 
 import (
 	"bytes"
-	json "github.com/json-iterator/go"
-	"github.com/meshplus/hyperbench/common"
-	"github.com/meshplus/hyperbench/core/collector"
-	"github.com/meshplus/hyperbench/core/network"
-	"github.com/op/go-logging"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -19,6 +12,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	json "github.com/json-iterator/go"
+	"github.com/meshplus/hyperbench/common"
+	"github.com/meshplus/hyperbench/core/collector"
+	"github.com/meshplus/hyperbench/core/network"
+	"github.com/op/go-logging"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -197,6 +198,14 @@ func (c *Client) upload() error {
 
 func (c *Client) init() error {
 	return c.callWithValues("init", network.InitPath, url.Values{"nonce": {c.nonce}, "index": {strconv.Itoa(c.index)}})
+}
+
+func (c *Client) Testinit() error {
+	return c.init()
+}
+
+func (c *Client) TestsetNonce() error {
+	return c.setNonce()
 }
 
 func (c *Client) callWithValues(method string, path string, values url.Values) (err error) {

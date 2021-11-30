@@ -335,7 +335,7 @@ func (c *Client) Transfer(args bcom.Transfer, ops ...bcom.Option) (result *fcom.
 	if !c.op.poll {
 		return ret
 	}
-	return c.Confirm(result)
+	return c.Confirm(ret)
 }
 
 //SetContext set test group context in go client

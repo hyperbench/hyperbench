@@ -2,11 +2,39 @@ package recorder
 
 import (
 	"bytes"
-	"github.com/meshplus/hyperbench/common"
+	"os"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/meshplus/hyperbench/common"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestRecorder(t *testing.T) {
+	viper.Set("recorder.csv", "")
+	recorder := NewRecorder()
+	assert.NotNil(t, recorder)
+
+	recorder.Process(common.Report{
+		Cur: &common.Data{
+			Results: []common.AggData{
+				common.AggData{
+					Label: "11",
+				},
+			},
+		},
+		Sum: &common.Data{},
+	})
+
+	assert.NotNil(t, GetCSVPath())
+
+	recorder.Release()
+
+	os.RemoveAll("./csv")
+
+}
 
 func BenchmarkWrite(b *testing.B) {
 	times := 100

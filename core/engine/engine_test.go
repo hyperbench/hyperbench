@@ -5,7 +5,35 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
+
+func TestEngine(t *testing.T) {
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
+
+	engine1 := NewEngine(BaseEngineConfig{
+		Rate:     1,
+		Duration: time.Millisecond * 500,
+	})
+	assert.NotNil(t, engine1)
+
+	engine2 := NewEngine(BaseEngineConfig{
+		Rate:     101,
+		Duration: time.Second * 1,
+	})
+	assert.NotNil(t, engine2)
+
+	engine1.Run(func() {})
+
+	engine1.Close()
+
+	engine2.Run(func() {})
+}
 
 func TestContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())

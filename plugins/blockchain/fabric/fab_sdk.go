@@ -1,7 +1,9 @@
 package fabric
 
 import (
-	"encoding/json"
+	"log"
+	"os"
+
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	clientMSP "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
@@ -12,8 +14,6 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/msp"
 	"github.com/meshplus/hyperbench/plugins/blockchain/base"
-	"log"
-	"os"
 )
 
 // SDK struct
@@ -102,19 +102,6 @@ func (s *SDK) GetResmgmtClient() *resmgmt.Client {
 	return orgResMgmt
 }
 
-// GetTPS get tps
-func (s *SDK) GetTPS() *resmgmt.Client {
-	//prepare context
-	adminContext := s.SDK.Context(fabsdk.WithUser(s.OrgAdmin), fabsdk.WithOrg(s.OrgName))
-
-	//org resource management client
-	orgResMgmt, err := resmgmt.New(adminContext)
-	if err != nil {
-		log.Printf("failed to create new regmgmt client: %s\n", err)
-	}
-	return orgResMgmt
-}
-
 //GetMspClient get clientMSP.Client
 //if success return nil error
 func (s *SDK) GetMspClient() (*clientMSP.Client, error) {
@@ -159,11 +146,6 @@ func getRegistrarEnrollmentCredentials(ctxProvider context.ClientProvider) (stri
 		log.Printf("CAConfig failed: %v\n", err)
 	}
 	return caConfig.Registrar.EnrollID, caConfig.Registrar.EnrollSecret
-}
-
-func (s *SDK) String() string {
-	bytes, _ := json.Marshal(s)
-	return string(bytes)
 }
 
 // CleanupUserData clean up CA dir

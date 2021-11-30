@@ -42,7 +42,7 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	vm.vm = lua.NewState()
 	defer func() {
 		if err != nil {
-			vm.vm.Close()
+			vm = nil
 		}
 	}()
 
@@ -80,14 +80,10 @@ const (
 	beforeGet      = "BeforeGet"
 	beforeSet      = "BeforeSet"
 	// nolint
-	getContext = "GetContext"
-	// nolint
 	setContext = "SetContext"
 	beforeRun  = "BeforeRun"
 	run        = "Run"
 	afterRun   = "AfterRun"
-	// nolint
-	statistics = "Statistics"
 )
 
 // builtin
@@ -234,9 +230,13 @@ func (v *VM) Run(ctx common.TxContext) (*common.Result, error) {
 
 // AfterRun will call once after run.
 func (v *VM) AfterRun() error {
-	return v.vm.CallByParam(lua.P{
-		Fn: v.instance.RawGetString(afterRun),
-	})
+	fn := v.instance.RawGetString(afterRun)
+	if fn != lua.LNil {
+		return v.vm.CallByParam(lua.P{
+			Fn: fn,
+		}, v.instance)
+	}
+	return nil
 }
 
 // Close close vm.
