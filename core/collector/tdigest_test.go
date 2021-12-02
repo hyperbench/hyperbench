@@ -2,13 +2,13 @@ package collector
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/influxdata/tdigest"
-	"github.com/meshplus/hyperbench/common"
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/influxdata/tdigest"
+	"github.com/meshplus/hyperbench/common"
+	"github.com/stretchr/testify/assert"
 )
 
 func BenchmarkTDigest_Add(b *testing.B) {
@@ -117,22 +117,81 @@ func TestTDigest_MarshalJSON(t *testing.T) {
 	ast.Equal(td.Centroids(), newTd.Centroids())
 }
 
-func Test(t *testing.T) {
-	td := tdigest.NewWithCompression(1000)
-	for _, x := range []float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1} {
-		td.Add(x, 1)
+func TestTDigestDetailsCollector(t *testing.T) {
+	col := NewTDigestCollectorBuilder("details")
+	col1 := col()
+	col2 := col()
+	assert.Equal(t, col1.Type(), "details")
+	assert.Equal(t, col2.Type(), "details")
+
+	res1 := &common.Result{}
+	res2 := &common.Result{
+		BuildTime:   time.Now().UnixNano(),
+		SendTime:    time.Now().UnixNano(),
+		ConfirmTime: time.Now().UnixNano(),
+		WriteTime:   time.Now().UnixNano(),
 	}
 
-	// Compute Quantiles
-	fmt.Println("50th", td.Quantile(0.5))
-	fmt.Println("75th", td.Quantile(0.75))
-	fmt.Println("90th", td.Quantile(0.9))
-	fmt.Println("99th", td.Quantile(0.99))
+	col1.Add(res1)
+	assert.Equal(t, len(col1.Get().Results), 1)
+	col2.Add(res2)
+	assert.Equal(t, len(col1.Get().Results), 1)
 
-	// Compute CDFs
-	fmt.Println("CDF(1) = ", td.CDF(1))
-	fmt.Println("CDF(2) = ", td.CDF(2))
-	fmt.Println("CDF(3) = ", td.CDF(3))
-	fmt.Println("CDF(4) = ", td.CDF(4))
-	fmt.Println("CDF(5) = ", td.CDF(5))
+	var bs []byte
+	col2.Merge(bs)
+	assert.Equal(t, len(col1.Get().Results), 1)
+
+	col1.Add(res2)
+	bs = col1.Serialize()
+	assert.NotNil(t, bs)
+	col2.Merge(bs)
+	assert.Equal(t, len(col1.Get().Results), 1)
+
+	col1.MergeC(col2)
+	assert.Equal(t, len(col1.Get().Results), 1)
+
+	col1.Reset()
+	assert.Equal(t, len(col1.Get().Results), 0)
+	col3 := col()
+	col3.MergeC(col2)
+	assert.Equal(t, len(col3.Get().Results), 1)
+
+}
+
+func TestTDigestSummaryCollector(t *testing.T) {
+	co1 := NewTDigestCollectorBuilder("summary")
+	co2 := NewTDigestCollectorBuilder("")
+
+	col1 := co1()
+	col2 := co2()
+	assert.Equal(t, col1.Type(), "summary")
+	assert.Equal(t, col2.Type(), "summary")
+
+	res1 := &common.Result{}
+	res2 := &common.Result{
+		BuildTime: time.Now().UnixNano(),
+	}
+
+	col1.Add(res1)
+	assert.Equal(t, col1.(*TDigestSummaryCollector).Data.Num, 0)
+	col2.Add(res2)
+	assert.Equal(t, col2.(*TDigestSummaryCollector).Data.Num, 1)
+
+	var bs []byte
+	col2.Merge(bs)
+	assert.Equal(t, col2.(*TDigestSummaryCollector).Data.Num, 1)
+
+	col1.Add(res2)
+	bs = col1.Serialize()
+	assert.NotNil(t, bs)
+	col2.Merge(bs)
+	assert.Equal(t, col2.(*TDigestSummaryCollector).Data.Num, 2)
+
+	col1.MergeC(col2)
+	assert.Equal(t, col1.(*TDigestSummaryCollector).Data.Num, 3)
+
+	col1.Reset()
+	assert.Equal(t, col1.(*TDigestSummaryCollector).Data.Num, 0)
+	assert.Equal(t, len(col1.Get().Results), 1)
+
 }

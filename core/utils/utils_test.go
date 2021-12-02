@@ -3,13 +3,16 @@ package utils
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
 	"math/big"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/meshplus/hyperbench/common"
+	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestConfig struct {
@@ -17,7 +20,23 @@ type TestConfig struct {
 	Duration time.Duration `mapstruct:"duration"`
 }
 
-func MyFunc(*TestConfig) {}
+func TestUtils(t *testing.T) {
+	a := AggData2CSV(nil, "", common.AggData{
+		Label: "11",
+	})
+	assert.NotNil(t, a)
+
+	b := Latency2CSV(nil, common.Latency{})
+	assert.NotNil(t, b)
+
+	i := uint(1)
+	c := i2s(i)
+	assert.NotNil(t, c)
+
+	j := int32(1)
+	d := i2s(j)
+	assert.NotNil(t, d)
+}
 
 func TestReflectParam(t *testing.T) {
 
@@ -48,7 +67,6 @@ adjust-factor = 0.95
 	viper.Sub("schedules")
 	v := viper.Get("schedules")
 	param := v.([]interface{})[0].(map[string]interface{})
-	//rv := TReflectParam(MyFunc, param)
 	//fmt.Println(v)
 	//fmt.Println(rv)
 	conf := &TestConfig{}

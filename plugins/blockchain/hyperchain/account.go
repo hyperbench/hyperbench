@@ -2,15 +2,16 @@ package hyperchain
 
 import (
 	"fmt"
-	"github.com/meshplus/gosdk/account"
-	"github.com/meshplus/gosdk/common"
-	"github.com/op/go-logging"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/meshplus/gosdk/account"
+	"github.com/meshplus/gosdk/common"
+	"github.com/op/go-logging"
+	"github.com/pkg/errors"
 )
 
 //AccountType the type of sign account
@@ -129,7 +130,7 @@ func (am *AccountManager) SetAccount(accountName string, accountJSON string, pas
 	case ECDSA:
 		ac, err = account.NewAccountFromAccountJSON(accountJSON, password)
 		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("parse ecdsa account error"))
+			return nil, errors.Wrap(err, "parse ecdsa account error")
 
 		}
 	case SM2:

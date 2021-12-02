@@ -2,11 +2,50 @@ package blockchain
 
 import (
 	"fmt"
+	"testing"
+
+	"github.com/meshplus/hyperbench/plugins/blockchain/base"
+	"github.com/stretchr/testify/assert"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
-	"testing"
 )
+
+func TestNewBlockchain(t *testing.T) {
+	bk, err := NewBlockchain(base.ClientConfig{})
+	assert.NotNil(t, bk)
+	assert.NoError(t, err)
+
+	bk, err = NewBlockchain(base.ClientConfig{
+		ClientType: "eth",
+	})
+	assert.Nil(t, bk)
+	assert.Error(t, err)
+
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
+	bk, err = NewBlockchain(base.ClientConfig{
+		ClientType: "fabric",
+	})
+	assert.Nil(t, bk)
+	assert.Error(t, err)
+}
+
+func TestNewHyperchain(t *testing.T) {
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
+	bk, err := NewBlockchain(base.ClientConfig{
+		ClientType: "flato",
+	})
+	assert.Nil(t, bk)
+	assert.Error(t, err)
+}
 
 func TestLua(t *testing.T) {
 	L := lua.NewState()

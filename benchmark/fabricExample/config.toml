@@ -7,7 +7,7 @@ cap = 1                                    # 客户端虚拟机数量
 script = "benchmark/fabricExample/script.lua"  # 脚本
 type = "fabric"                          # 区块链类型
 config = "benchmark/fabricExample/fabric"  # 区块链SDK配置路径
-contract = "github.com/ultramesh/frigate/benchmark/fabricExample/contract"   # 合约目录路径
+contract = "github.com/meshplus/hyperbench/benchmark/fabricExample/contract"   # 合约目录路径
 args = []                               # 合约参数路径
 
 [option]

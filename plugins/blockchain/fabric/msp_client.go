@@ -2,11 +2,11 @@ package fabric
 
 import (
 	"errors"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
-	clientMSP "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
-	"github.com/op/go-logging"
 	"strconv"
 	"time"
+
+	clientMSP "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
+	"github.com/op/go-logging"
 )
 
 //SECRET the default secret for account
@@ -36,7 +36,7 @@ type Client struct {
 func NewClientManager(sdk *SDK, enableMSP bool, logger *logging.Logger) (*ClientManager, error) {
 	var (
 		e         error
-		mspClient *msp.Client
+		mspClient *clientMSP.Client
 	)
 
 	// generate the msp client if msp is enabled

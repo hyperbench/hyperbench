@@ -64,7 +64,7 @@ type Msg struct {
 // New use given blockchainBase create ETH.
 func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 	log := fcom.GetLogger("eth")
-	ethConfig, err := os.Open(viper.GetString(fcom.ClientConfigPath) + "/eth.toml")
+	ethConfig, err := os.Open(blockchainBase.ConfigPath + "/eth.toml")
 	if err != nil {
 		log.Errorf("load eth configuration fialed: %v", err)
 		return nil, err
@@ -75,7 +75,7 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 		log.Errorf("ethClient initiate fialed: %v", err)
 		return nil, err
 	}
-	files, err := ioutil.ReadDir(viper.GetString(fcom.ClientConfigPath) + "/keystore")
+	files, err := ioutil.ReadDir(blockchainBase.ConfigPath + "/keystore")
 	if err != nil {
 		log.Errorf("access keystore failed:%v", err)
 		return nil, err
@@ -88,7 +88,7 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 	for i, file := range files {
 		fileName := file.Name()
 		account := fileName[strings.LastIndex(fileName, "-")+1:]
-		privKey, _, err := KeystoreToPrivateKey(viper.GetString(fcom.ClientConfigPath)+"/keystore/"+fileName, "")
+		privKey, _, err := KeystoreToPrivateKey(blockchainBase.ConfigPath+"/keystore/"+fileName, "")
 		if err != nil {
 			log.Errorf("access account file failed: %v", err)
 			return nil, err
@@ -167,10 +167,9 @@ func New(blockchainBase *base.BlockchainBase) (client *ETH, err error) {
 	return
 }
 func (e *ETH) DeployContract() error {
-	contractPath := viper.GetString(fcom.ClientContractPath)
-	if contractPath != "" {
+	if e.BlockchainBase.ContractPath != "" {
 		var er error
-		e.contract, er = newContract()
+		e.contract, er = newContract(e.BlockchainBase.ContractPath)
 		if er != nil {
 			e.Logger.Errorf("initiate contract failed: %v", er)
 			return er
@@ -401,10 +400,6 @@ func (e *ETH) GetContext() (string, error) {
 	}
 
 	bytes, err := json.Marshal(msg)
-	if err != nil {
-		e.Logger.Errorf("marshal msg failed: %v", err)
-		return "", err
-	}
 
 	return string(bytes), err
 }
@@ -417,10 +412,7 @@ func (e *ETH) Statistic(statistic bcom.Statistic) (*fcom.RemoteStatistic, error)
 	statisticData, err := GetTPS(e, from, to)
 	if err != nil {
 		e.Logger.Errorf("getTPS failed: %v", err)
-		return &fcom.RemoteStatistic{
-			Start: from,
-			End:   to,
-		}, err
+		return nil, err
 	}
 	return statisticData, nil
 }
@@ -451,7 +443,9 @@ func KeystoreToPrivateKey(privateKeyFile, password string) (string, string, erro
 
 // GetTPS calculates txnum and blocknum of pressure test
 func GetTPS(e *ETH, beginTime, endTime int64) (*fcom.RemoteStatistic, error) {
-
+	if beginTime > endTime {
+		return nil, errors.New("query time error")
+	}
 	blockInfo, err := e.ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		return nil, err
@@ -482,27 +476,26 @@ func GetTPS(e *ETH, beginTime, endTime int64) (*fcom.RemoteStatistic, error) {
 }
 
 // newContract initiates abi and bin files of contract
-func newContract() (contract *Contract, err error) {
-	files, err := ioutil.ReadDir(viper.GetString(fcom.ClientContractPath))
+func newContract(contractPath string) (contract *Contract, err error) {
+	files, err := ioutil.ReadDir(contractPath)
 	var abiData, binData []byte
 	if err != nil {
 		return nil, err
 	}
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".abi" {
-			abiData, err = ioutil.ReadFile(viper.GetString(fcom.ClientContractPath) + "/" + file.Name())
+			abiData, err = ioutil.ReadFile(contractPath + "/" + file.Name())
 			if err != nil {
 				return nil, err
 			}
 		}
 		if path.Ext(file.Name()) == ".bin" {
-			binData, err = ioutil.ReadFile(viper.GetString(fcom.ClientContractPath) + "/" + file.Name())
+			binData, err = ioutil.ReadFile(contractPath + "/" + file.Name())
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-
 	abi := (string)(abiData)
 	bin := (string)(binData)
 	contract = &Contract{

@@ -1,223 +1,263 @@
 package eth
 
 import (
-	"context"
-	"crypto/ecdsa"
-	"fmt"
-	"log"
-	"math"
-	"math/big"
-	"strings"
+	"io/ioutil"
+	"os"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
+	fcom "github.com/meshplus/hyperbench/common"
+	"github.com/meshplus/hyperbench/plugins/blockchain/base"
+	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
+
+	"github.com/spf13/viper"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClient(t *testing.T) {
 	t.Skip()
-	client, err := ethclient.Dial("/Users/aiyoa/desktop/eth-test/data/geth.ipc")
-	if err != nil {
-		log.Fatal(err)
-	}
+	config := `
+	[engine]
+	rate = 1
+	duration = "5s"
+	cap = 1
+	`
+	ethConfig := `
+	[rpc]
+	node = "localhost"
+	port = "a"
+	`
+	defer os.RemoveAll("./benchmark")
 
-	fmt.Println("we have a connection")
-	_ = client // we'll use this in the upcoming sections
-}
-func TestBalance(t *testing.T) {
-	t.Skip()
-	client, err := ethclient.Dial("/Users/aiyoa/desktop/eth-test/data/geth.ipc")
-	account := common.HexToAddress("01eec173917c429901b41b98ac3dd300e060e698")
-	balance, err := client.BalanceAt(context.Background(), account, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	os.MkdirAll("./benchmark/ethInvoke/eth", 0755)
+	ioutil.WriteFile("./benchmark/ethInvoke/config.toml", []byte(config), 0644)
+	ioutil.WriteFile("./benchmark/ethInvoke/eth/eth.toml", []byte(ethConfig), 0644)
 
-	fmt.Println(balance)
-	fbalance := new(big.Float)
-	fbalance.SetString(balance.String())
-	ethValue := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	viper.AddConfigPath("benchmark/ethInvoke")
+	viper.ReadInConfig()
+	op := make(map[string]interface{})
+	op["wkIdx"] = int64(0)
+	op["vmIdx"] = int64(0)
+	b := base.NewBlockchainBase(base.ClientConfig{
+		ClientType:   "eth",
+		ConfigPath:   "./../../../benchmark/ethInvoke/eth",
+		ContractPath: "./../../../benchmark/ethInvoke",
+		Args:         nil,
+		Options:      op,
+	})
+	client, err := New(b)
+	assert.NotNil(t, client)
+	assert.NoError(t, err)
 
-	fmt.Println(ethValue)
-}
-func TestTransfer(t *testing.T) {
-	t.Skip()
-	client, err := ethclient.Dial("/Users/aiyoa/desktop/eth-test/data/geth.ipc")
-	if err != nil {
-		log.Fatal(err)
-	}
+	b.ConfigPath = ""
+	client, err = New(b)
+	assert.Nil(t, client)
+	assert.Error(t, err)
 
-	privKey, address, err := KeystoreToPrivateKey("/Users/aiyoa/desktop/eth-test/data/keystore/UTC--2021-10-21T03-41-34.288690000Z--01eec173917c429901b41b98ac3dd300e060e698", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("privKey:%s\naddress:%s\n", privKey, address)
+	b.ConfigPath = "./benchmark/ethInvoke/eth"
+	client, err = New(b)
+	assert.Nil(t, client)
+	assert.Error(t, err)
 
-	privateKey, err := crypto.HexToECDSA(privKey)
-	if err != nil {
-		log.Fatal(err)
-	}
+	viper.Set("rpc.port", "")
+	client, err = New(b)
+	assert.Nil(t, client)
+	assert.Error(t, err)
 
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
+	key1 := `
+	{"address":"74d366e0649a91395bb122c005917644382b9452","crypto":{"cipher":"aes-128-ct","ciphertext":"fc4e8e2c753a98762828fad76697322da6a0143d6bfe223ce8a590637b433b75","cipherparams":{"iv":"9eab2eb01311d078ac7e3325150eecb2"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"0a8bda7b2e61a563a277601e65f6f30a92ab58e6e18f806105bb7218dff4c883"},"mac":"18f543410e2869a6a843166f1c3fb6aae5a5ec0dc6fdd41d1d76d8e8b19c5983"},"id":"98123f84-3855-4f12-b844-8c0d8ac02c09","version":3}
+	`
+	os.MkdirAll("./benchmark/ethInvoke/eth/keystore", 0755)
+	ioutil.WriteFile("./benchmark/ethInvoke/eth/keystore/key1", []byte(key1), 0644)
+	client, err = New(b)
+	assert.Nil(t, client)
+	assert.Error(t, err)
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	value := big.NewInt(1000) // in wei (1 eth)
-	gasLimit := uint64(21000) // in units
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	toAddress := common.HexToAddress("a6df6489927a9d0172185efe68de1f9aace82639")
-	var data []byte
-	tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, data)
-
-	chainID, err := client.NetworkID(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
-	fmt.Println(signedTx.ChainId())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = client.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
+	key1 = `
+	{"address":"74d366e0649a91395bb122c005917644382b9452","crypto":{"cipher":"aes-128-ctr","ciphertext":"fc4e8e2c753a98762828fad76697322da6a0143d6bfe223ce8a590637b433b75","cipherparams":{"iv":"9eab2eb01311d078ac7e3325150eecb2"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"0a8bda7b2e61a563a277601e65f6f30a92ab58e6e18f806105bb7218dff4c883"},"mac":"18f543410e2869a6a843166f1c3fb6aae5a5ec0dc6fdd41d1d76d8e8b19c5983"},"id":"98123f84-3855-4f12-b844-8c0d8ac02c09","version":3}
+	`
+	ioutil.WriteFile("./benchmark/ethInvoke/eth/keystore/key1", []byte(key1), 0644)
+	client, err = New(b)
+	assert.Nil(t, client)
+	assert.Error(t, err)
 
 }
 
 func TestDeployContract(t *testing.T) {
 	t.Skip()
-	client, err := ethclient.Dial("/Users/aiyoa/desktop/eth-test/data/geth.ipc")
-	if err != nil {
-		log.Fatal(err)
-	}
+	viper.Set("rpc.port", "8545")
+	viper.Set("rpc.node", "localhost")
+	op := make(map[string]interface{})
+	op["wkIdx"] = int64(0)
+	op["vmIdx"] = int64(0)
+	b := base.NewBlockchainBase(base.ClientConfig{
+		ClientType:   "eth",
+		ConfigPath:   "./../../../benchmark/ethInvoke/eth",
+		ContractPath: "./../../../benchmark/ethInvoke",
+		Args:         nil,
+		Options:      op,
+	})
+	client, err := New(b)
+	assert.NotNil(t, client)
+	assert.NoError(t, err)
 
-	privKey, address, err := KeystoreToPrivateKey("/Users/aiyoa/desktop/eth-test/data/keystore/UTC--2021-10-21T03-41-34.288690000Z--01eec173917c429901b41b98ac3dd300e060e698", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("privKey:%s\naddress:%s\n", privKey, address)
-	privateKey, err := crypto.HexToECDSA(privKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
+	err = client.DeployContract()
+	assert.Error(t, err)
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
+	b.ContractPath = "./../../../benchmark/ethInvoke/contract"
+	client, _ = New(b)
+	err = client.DeployContract()
+	assert.NoError(t, err)
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	chainID, err := client.NetworkID(context.Background())
-	auth, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-	input := "1.0"
-	contract, _ := newContract()
-	parsed, err := abi.JSON(strings.NewReader(contract.ABI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	contractAddress, tx, instance, err := bind.DeployContract(auth, parsed, common.FromHex(contract.BIN), client, input)
+	defer os.RemoveAll("./benchmark")
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(contractAddress.Hex()) // 0xA103dA779fCB208c02759BB6fBD3eD1d354B9E16
-	fmt.Println(tx.Hash().Hex())       // 0x1690003dca86eba1491e0aaa5a1cfde3fa39cafd90058537d8a0c8c4b6863d25
+	b.ContractPath = ""
+	client, _ = New(b)
+	err = client.DeployContract()
+	assert.NoError(t, err)
 
-	_ = instance
+	os.MkdirAll("./benchmark/ethInvoke", 0755)
+	b.ContractPath = "./benchmark/ethInvoke/contract"
+	client, _ = New(b)
+	err = client.DeployContract()
+	assert.Error(t, err)
+
+	os.MkdirAll("./benchmark/ethInvoke/contract/a.abi", 0755)
+	b.ContractPath = "./benchmark/ethInvoke/contract"
+	client, _ = New(b)
+	err = client.DeployContract()
+	assert.Error(t, err)
+
+	os.Remove("./benchmark/ethInvoke/contract/a.abi")
+	os.MkdirAll("./benchmark/ethInvoke/contract/b.bin", 0755)
+	err = client.DeployContract()
+	assert.Error(t, err)
+
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
+	os.Remove("./benchmark/ethInvoke/contract/b.bin")
+	abi := `
+	[{"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"key","type":"string"},{"indexed":false,"internalType":"string","name":"value","type":"string"}],"name":"ItemSet","type":"event"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"items","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"key","type":"string"},{"internalType":"string","name":"value","type":"string"}],"name":"test","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]
+	`
+	ioutil.WriteFile("./benchmark/ethInvoke/contract/a.abi", []byte(abi), 0644)
+	ioutil.WriteFile("./benchmark/ethInvoke/contract/b.bin", []byte("abi"), 0644)
+	err = client.DeployContract()
+	assert.Error(t, err)
+
 }
 
-func TestInvoke(t *testing.T) {
+func TestTransaction(t *testing.T) {
 	t.Skip()
-	client, err := ethclient.Dial("/Users/aiyoa/desktop/eth-test/data/geth.ipc")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//invoke
+	viper.Set("rpc.port", "8545")
+	viper.Set("rpc.node", "localhost")
+	op := make(map[string]interface{})
+	op["wkIdx"] = int64(0)
+	op["vmIdx"] = int64(0)
+	b := base.NewBlockchainBase(base.ClientConfig{
+		ClientType:   "eth",
+		ConfigPath:   "./../../../benchmark/ethInvoke/eth",
+		ContractPath: "./../../../benchmark/ethInvoke/contract",
+		Args:         nil,
+		Options:      op,
+	})
+	client, _ := New(b)
+	client.DeployContract()
+	res := client.Invoke(bcom.Invoke{Func: "test", Args: []interface{}{"foo", "bar"}})
+	assert.NotNil(t, res)
 
-	privKey, address, err := KeystoreToPrivateKey("/Users/aiyoa/desktop/eth-test/data/keystore/UTC--2021-10-21T03-41-34.288690000Z--01eec173917c429901b41b98ac3dd300e060e698", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("privKey:%s\naddress:%s\n", privKey, address)
-	privateKey, err := crypto.HexToECDSA(privKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
-	}
+	res = client.Invoke(bcom.Invoke{Func: "111", Args: []interface{}{"foo", "bar"}})
+	assert.NotNil(t, res)
+	//getcontext
+	msg, err := client.GetContext()
+	assert.NoError(t, err)
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//setcontext
+	err = client.SetContext(msg)
+	assert.NoError(t, err)
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	chainID, err := client.NetworkID(context.Background())
-	auth, _ := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-	contractAddress := common.HexToAddress("0x7c376C8ED768018aa53d3C37Eed637912fEAA782")
-	contract, _ := newContract()
-	parsed, err := abi.JSON(strings.NewReader(contract.ABI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	instance := bind.NewBoundContract(contractAddress, parsed, client, client, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	key := "foo"
-	value := "bar"
+	client.contract.ABI = "111"
+	msg, err = client.GetContext()
+	assert.NoError(t, err)
+	err = client.SetContext(msg)
+	assert.Error(t, err)
 
-	tx, err := instance.Transact(auth, "setItem", key, value)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
+	//transfer
+	client, _ = New(b)
+	res = client.Transfer(bcom.Transfer{From: "74d366e0649a91395bb122c005917644382b9452", To: "74d366e0649a91395bb122c005917644382b9452", Amount: int64(1)})
+	assert.Equal(t, res.Status, fcom.Status("success"))
+	// confirm
+	res = client.Confirm(res)
+	assert.Equal(t, res.Status, fcom.Status("confirm"))
 
-	fmt.Printf("tx sent: %s\n", tx.Hash().Hex()) // tx sent: 0x5012ba7c07e46da3e1fbec454ed0e4079936b605d7ef0c0b0d0572972bb32dc6
+	res.UID = ""
+	res.Status = "success"
+	res = client.Confirm(res)
+	assert.Equal(t, res.Status, fcom.Status("success"))
+
+	res.UID = "111"
+	res = client.Confirm(res)
+	assert.Equal(t, res.Status, fcom.Status("unknown"))
+
+	client.nonce -= 1
+	res = client.Transfer(bcom.Transfer{From: "74d366e0649a91395bb122c005917644382b9452", To: "74d366e0649a91395bb122c005917644382b9452", Amount: int64(1)})
+	assert.Equal(t, res.Status, fcom.Status("failure"))
+
+	defer os.RemoveAll("./benchmark")
+
+	b = base.NewBlockchainBase(base.ClientConfig{
+		ClientType: "eth",
+		ConfigPath: "./benchmark/ethTransfer/eth",
+		Args:       nil,
+		Options:    op,
+	})
+	os.MkdirAll("./benchmark/ethTransfer/eth/keystore/-3", 0755)
+	ioutil.WriteFile("./benchmark/ethTransfer/eth/keystore/-1", []byte(`{"address":"74d366e0649a91395bb122c005917644382b9452","crypto":{"cipher":"aes-128-ctr","ciphertext":"fc4e8e2c753a98762828fad76697322da6a0143d6bfe223ce8a590637b433b75","cipherparams":{"iv":"9eab2eb01311d078ac7e3325150eecb2"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"0a8bda7b2e61a563a277601e65f6f30a92ab58e6e18f806105bb7218dff4c883"},"mac":"18f543410e2869a6a843166f1c3fb6aae5a5ec0dc6fdd41d1d76d8e8b19c5983"},"id":"98123f84-3855-4f12-b844-8c0d8ac02c09","version":3}`), 0644)
+	ioutil.WriteFile("./benchmark/ethTransfer/eth/keystore/-2", []byte(`{"address":"3b2b643246666bfa1332257c13d0d1283736838d","crypto":{"cipher":"aes-128-ctr","ciphertext":"50b10e30295ff3a5b729b3bc62e89145ebf6b5839cd3b8c13dcbbf099584cec6","cipherparams":{"iv":"fe3dd61296891e6654fd1b39ff2401a2"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"1244ce8b522ff776be571c8814a7dfd6c8607aecd1f3b145385a27aa0d1443c7"},"mac":"78ff225aa55470d242b1464b9b42476313024bbfab343a5bbd27e748c67b44d8"},"id":"c066e226-9b72-4d63-a556-70034d0a135b","version":3}`), 0644)
+	ioutil.WriteFile("./benchmark/ethTransfer/eth/eth.toml", []byte(``), 0644)
+	client, _ = New(b)
+	assert.Nil(t, client)
+
+	os.Remove("./benchmark/ethTransfer/eth/keystore/-3")
+	ioutil.WriteFile("./benchmark/ethTransfer/eth/keystore/-4", []byte(""), 0644)
+	client, _ = New(b)
+	assert.Nil(t, client)
+
+	os.Remove("./benchmark/ethTransfer/eth/keystore/-4")
+	client, _ = New(b)
+
+	//getcontext
+	msg, err = client.GetContext()
+	assert.NoError(t, err)
+
+	//setcontext
+	err = client.SetContext(msg)
+	assert.NoError(t, err)
+
+	err = client.SetContext("")
+	assert.NoError(t, err)
+
+	err = client.SetContext("111")
+	assert.Error(t, err)
+
+	//statistic
+	client.startBlock -= 1
+	result, err := client.Statistic(bcom.Statistic{From: 0, To: 1})
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	result, err = client.Statistic(bcom.Statistic{From: 2, To: 1})
+	assert.Error(t, err)
+	assert.Nil(t, result)
+
+	err = client.ResetContext()
+	assert.NoError(t, err)
+
+	//option
+	err = client.Option(bcom.Option{})
+	assert.NoError(t, err)
+
 }

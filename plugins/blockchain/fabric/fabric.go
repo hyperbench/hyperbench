@@ -2,16 +2,18 @@ package fabric
 
 import (
 	"encoding/json"
+	"math/rand"
+	"path/filepath"
+	"strconv"
+	"time"
+
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric/common/cauthdsl"
 	common2 "github.com/meshplus/hyperbench/common"
 	"github.com/meshplus/hyperbench/plugins/blockchain/base"
 	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
+	"github.com/pkg/errors"
 	"github.com/spf13/cast"
-	"math/rand"
-	"path/filepath"
-	"strconv"
-	"time"
 )
 
 const (
@@ -53,13 +55,14 @@ func New(blockchainBase *base.BlockchainBase) (client *Fabric, err error) {
 	client.Instant = cast.ToInt(client.Options["instant"])
 	client.SDK = NewSDK(blockchainBase, filepath.Join(client.ConfigPath, DefaultConf))
 	client.ChannelID = cast.ToString(client.Options["channel"])
+	client.CCPath = client.ContractPath
 
 	initArgs := cast.ToStringSlice(client.Args)
 	client.InitArgs = make([][]byte, 0, len(initArgs))
 	for _, arg := range initArgs {
 		client.InitArgs = append(client.InitArgs, []byte(arg))
 	}
-	client.MSP = cast.ToBool(client.Options["option.MSP"])
+	client.MSP = cast.ToBool(client.Options["MSP"])
 	client.invoke = true
 	return
 }
@@ -146,20 +149,20 @@ func (f *Fabric) Invoke(invoke bcom.Invoke, ops ...bcom.Option) *common2.Result 
 	endTime := time.Now().UnixNano()
 	if err != nil {
 		return &common2.Result{
-			UID:         common2.InvalidUID,
-			Ret:         []interface{}{},
-			Status:      common2.Failure,
-			BuildTime:   startTime,
-			ConfirmTime: endTime,
+			UID:       common2.InvalidUID,
+			Ret:       []interface{}{},
+			Status:    common2.Failure,
+			BuildTime: startTime,
+			SendTime:  endTime,
 		}
 	}
 
 	result := &common2.Result{
-		UID:         common2.InvalidUID,
-		Ret:         []interface{}{resp.Payload},
-		Status:      common2.Failure,
-		BuildTime:   startTime,
-		ConfirmTime: 0,
+		UID:       string(resp.TransactionID),
+		Ret:       []interface{}{resp.Payload},
+		Status:    common2.Success,
+		BuildTime: startTime,
+		SendTime:  endTime,
 	}
 
 	return result
@@ -222,10 +225,7 @@ func (f *Fabric) Statistic(statistic bcom.Statistic) (*common2.RemoteStatistic, 
 	from, to := statistic.From, statistic.To
 	statisticData, err := GetTPS(f.SDK.GetLedgerClient(f.ChannelID, f.SDK.OrgAdmin, f.SDK.OrgName), f.StartBlock, from, to)
 	if err != nil {
-		return &common2.RemoteStatistic{
-			Start: from,
-			End:   to,
-		}, err
+		return nil, errors.Wrap(err, "query error")
 	}
 	return statisticData, nil
 }
