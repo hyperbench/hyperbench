@@ -1,7 +1,7 @@
 module github.com/meshplus/hyperbench
 
 require (
-	github.com/Shopify/sarama v1.23.1 // indirect
+	github.com/DataDog/zstd v1.3.6-0.20190409195224-796139022798 // indirect
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/ethereum/go-ethereum v1.10.9
 	github.com/fsouza/go-dockerclient v1.4.4 // indirect
@@ -20,8 +20,7 @@ require (
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.11
 	github.com/karrick/godirwalk v1.16.1 // indirect
-	github.com/meshplus/crypto-standard v0.1.1 // indirect
-	github.com/meshplus/gosdk v0.1.0
+	github.com/meshplus/gosdk v1.0.0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
@@ -44,7 +43,5 @@ require (
 replace layeh.com/gopher-luar => github.com/layeh/gopher-luar v1.0.8-0.20190807124245-b07e371a3bb0
 
 replace golang.org/x/sys => github.com/golang/sys v0.0.0-20190813064441-fde4db37ae7a
-
-replace github.com/meshplus/crypto-standard => github.com/dawn-to-dusk/crypto-standard v0.1.2-0.20210915031756-9c6750095d70 // indirect
 
 go 1.13
