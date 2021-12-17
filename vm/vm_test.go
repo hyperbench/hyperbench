@@ -16,3 +16,4 @@ func TestNewVM(t *testing.T) {
 	assert.NotNil(t, vm)
 	assert.NoError(t, err)
 }
+

@@ -6,6 +6,7 @@ import (
 	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
 	"github.com/meshplus/hyperbench/plugins/blockchain/eth"
 	"github.com/meshplus/hyperbench/plugins/blockchain/fabric"
+	"github.com/meshplus/hyperbench/plugins/blockchain/fake"
 	"github.com/meshplus/hyperbench/plugins/blockchain/hyperchain"
 )
 
@@ -14,6 +15,7 @@ const (
 	clientFlato  = "flato"
 	clientFabric = "fabric"
 	clientEth    = "eth"
+	clientFake = "fake"
 )
 
 // NewBlockchain create blockchain with different client type.
@@ -26,6 +28,8 @@ func NewBlockchain(clientConfig base.ClientConfig) (client Blockchain, err error
 		client, err = fabric.New(clientBase)
 	case clientEth:
 		client, err = eth.New(clientBase)
+	case clientFake:
+		client, err = fake.New()
 	default:
 		client = clientBase
 	}

@@ -76,7 +76,7 @@ person = {
 }
 
 type Person struct {
-	Name string `mapstructure:"name"`
+	Name string
 }
 
 func (p *Person) Hi(p2 *Person) string {
@@ -91,10 +91,11 @@ func TestLua2(t *testing.T) {
 
 	L.SetGlobal("p", luar.New(L, p))
 	if err := L.DoString(`
-print(p:Hi({name="123"}))
+print(p:Hi({Name="123"}))
 `); err != nil {
 		panic(err)
 	}
+	fmt.Println("----------")
 	var m map[string]interface{}
 
 	fmt.Printf("%s\n", m)

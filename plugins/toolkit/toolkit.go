@@ -9,6 +9,7 @@ import (
 // ToolKit is the set of tool plugins.
 // exported methods and fields can be inject into vm.
 type ToolKit struct {
+	Name string
 }
 
 // NewToolKit create a new ToolKit instant as a plugin to vm
@@ -18,7 +19,10 @@ func NewToolKit() *ToolKit {
 
 // RandStr generate a random string with specific length
 func (t *ToolKit) RandStr(l uint) string {
-	return randomString(l)
+
+	t.Name = randomString(l)
+	//return randomString(l)
+	return t.Name
 }
 
 // RandInt generate a random int in specific range
@@ -26,10 +30,16 @@ func (t *ToolKit) RandInt(min, max int) int {
 	return randomInt(min, max)
 }
 
+func (t *ToolKit) TestInterface(input interface{}) interface{}{
+	fmt.Println("interface:",input)
+	return input
+}
+
 // String convert to string
 func (t *ToolKit) String(input interface{}, offsets ...int) string {
 
 	v := reflect.ValueOf(input)
+	fmt.Println("v.Kind() :",v.Kind())
 	switch v.Kind() {
 	case reflect.Ptr:
 		return t.String(v.Elem().Interface(), offsets...)
@@ -63,7 +73,6 @@ func (t *ToolKit) String(input interface{}, offsets ...int) string {
 		}
 		return string(ss)
 	}
-	fmt.Println("=====")
 	return ""
 }
 
