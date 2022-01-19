@@ -378,13 +378,12 @@ package lua
 import (
 	"errors"
 
-	"github.com/meshplus/hyperbench/common"
 	"github.com/meshplus/hyperbench/plugins/blockchain"
-	base2 "github.com/meshplus/hyperbench/plugins/blockchain/base"
-	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
 	idex "github.com/meshplus/hyperbench/plugins/index"
 	"github.com/meshplus/hyperbench/plugins/toolkit"
 	"github.com/meshplus/hyperbench/vm/base"
+	base2 "github.com/meshplus/hyperbench-common/base"
+	fcom "github.com/meshplus/hyperbench-common/common"
 	"github.com/spf13/viper"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
@@ -400,6 +399,10 @@ type VM struct {
 	client   blockchain.Blockchain
 
 	index *idex.Index
+}
+
+func (v *VM) Type() string {
+	return "lua"
 }
 
 // NewVM use given base to create VM.
@@ -482,7 +485,7 @@ func (v *VM) injectTestcaseBase() {
 		return 0
 	}
 	var result lua.LGFunction = func(state *lua.LState) int {
-		state.Push(luar.New(state, &common.Result{}))
+		state.Push(luar.New(state, &fcom.Result{}))
 		return 1
 	}
 
@@ -538,12 +541,17 @@ func (v *VM) GetContext() ([]byte, error) {
 }
 
 // Statistic statistic remote execute info.
-func (v *VM) Statistic(from, to int64) (*common.RemoteStatistic, error) {
+func (v *VM) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
 
-	return v.client.Statistic(bcom.Statistic{
+	return v.client.Statistic(fcom.Statistic{
 		From: from,
 		To:   to,
 	})
+}
+
+// LogStatus records blockheight and time
+func (v *VM) LogStatus() (end int64, err error) {
+	return v.client.LogStatus()
 }
 
 // BeforeSet will call before set context.
@@ -574,7 +582,7 @@ func (v *VM) BeforeRun() error {
 }
 
 // Run create and send tx to client.
-func (v *VM) Run(ctx common.TxContext) (*common.Result, error) {
+func (v *VM) Run(ctx fcom.TxContext) (*fcom.Result, error) {
 	v.index.Engine = ctx.EngineIdx
 	v.index.Tx = ctx.TxIdx
 
@@ -595,7 +603,7 @@ func (v *VM) Run(ctx common.TxContext) (*common.Result, error) {
 	if !ok {
 		return nil, errors.New("returned val is not user data")
 	}
-	res, ok := ud.Value.(*common.Result)
+	res, ok := ud.Value.(*fcom.Result)
 	if !ok {
 		return nil, errors.New("returned user data is not result")
 	}
@@ -620,14 +628,12 @@ func (v *VM) Close() {
 
 func (v *VM) setPlugins(table *lua.LTable) (err error) {
 
-	clientType, clientConfigPath := viper.GetString(common.ClientTypePath), viper.GetString(common.ClientConfigPath)
-	options := viper.GetStringMap(common.ClientOptionPath)
-	contractPath := viper.GetString(common.ClientContractPath)
-	args, _ := viper.Get(common.ClientContractArgsPath).([]interface{})
-	if clientType == "eth" {
-		options["vmIdx"] = v.index.VM
-		options["wkIdx"] = v.index.Worker
-	}
+	clientType, clientConfigPath := viper.GetString(fcom.ClientTypePath), viper.GetString(fcom.ClientConfigPath)
+	options := viper.GetStringMap(fcom.ClientOptionPath)
+	contractPath := viper.GetString(fcom.ClientContractPath)
+	args, _ := viper.Get(fcom.ClientContractArgsPath).([]interface{})
+	options["vmIdx"] = v.index.VM
+	options["wkIdx"] = v.index.Worker
 	v.client, err = blockchain.NewBlockchain(base2.ClientConfig{
 		ClientType:   clientType,
 		ConfigPath:   clientConfigPath,

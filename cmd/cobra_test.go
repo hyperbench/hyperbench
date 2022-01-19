@@ -31,6 +31,7 @@ func TestInitCmd(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	t.Skip()
 	defer os.RemoveAll("./benchmark")
 	config := `
 	[engine]

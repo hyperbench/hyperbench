@@ -1,0 +1,17 @@
+[engine]
+rate = 10                                    # 速率
+duration = "20s"                            # 持续时间
+cap = 50                                     # 客户端虚拟机数量
+
+[client]
+script = "benchmark/fabric/Sacc/script.lua"  # 脚本
+type = "fabric"                             # 区块链类型
+config = "benchmark/fabric/Sacc/fabric"      # 区块链SDK配置路径
+contract = "github.com/meshplus/hyperbench/benchmark/fabric/Sacc/contract"   # 合约目录路径
+args = ["A", "123"]                         # 合约参数路径
+plugin = "./fabric.so"                      # 插件路径
+
+[client.options]
+channel = "mychannel"                       # channelId
+MSP = true                                  # MSP设置
+instant = 20                                # 初始账户数量

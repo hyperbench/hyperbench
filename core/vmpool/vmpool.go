@@ -1,12 +1,14 @@
 package vmpool
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
+	"path"
+	"strings"
+
 	"github.com/meshplus/hyperbench/vm"
 	"github.com/meshplus/hyperbench/vm/base"
 	"github.com/spf13/viper"
-	"path"
-	"strings"
 )
 
 // Pool is the reusable vm.VM pool, Pop and Push is concurrent-safe
@@ -39,18 +41,18 @@ func NewPoolImpl(workerID int64, cap int64) (*PoolImpl, error) {
 		ch:  make(chan vm.VM, cap),
 	}
 
-	scriptPath := viper.GetString(common.ClientScriptPath)
+	scriptPath := viper.GetString(fcom.ClientScriptPath)
 	t := strings.TrimPrefix(path.Ext(scriptPath), ".")
 	configBase := base.ConfigBase{
 		Path: scriptPath,
-		Ctx: common.VMContext{
+		Ctx: fcom.VMContext{
 			WorkerIdx: workerID,
 			VMIdx:     0,
 		},
 	}
 	configBase.Ctx.WorkerIdx = workerID
 	var i int64
-	common.GetLogger("pool").Notice(workerID, cap, scriptPath, t)
+	fcom.GetLogger("pool").Notice(workerID, cap, scriptPath, t)
 	for i = 0; i < cap; i++ {
 		nvm, err := vm.NewVM(t, configBase)
 		if err != nil {

@@ -8,7 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/meshplus/hyperbench/core/network/client"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ import (
 func TestServer(t *testing.T) {
 	os.MkdirAll("./benchmark/111", 0755)
 	ioutil.WriteFile("./benchmark/111/a.toml", []byte(""), 0644)
-	viper.Set(common.BenchmarkArchivePath, "benchmark/111")
+	viper.Set(fcom.BenchmarkArchivePath, "benchmark/111")
 	svr := NewServer(0)
 	assert.NotNil(t, svr)
 
@@ -114,13 +115,15 @@ func TestCheckoutCollector(t *testing.T) {
 	cli := client.NewClient(5, "localhost:8080")
 
 	cli.TestsetNonce()
-	col, b := cli.CheckoutCollector()
+	col, b, err := cli.CheckoutCollector()
+	assert.Error(t, err)
 	assert.Nil(t, col)
 	assert.Equal(t, b, false)
 
 	cli.Teardown()
 
-	col, b = cli.CheckoutCollector()
+	col, b, err = cli.CheckoutCollector()
+	assert.Error(t, err)
 	assert.Nil(t, col)
 	assert.Equal(t, b, false)
 

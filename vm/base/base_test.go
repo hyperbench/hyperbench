@@ -3,11 +3,13 @@ package base
 import (
 	"testing"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBaseVm(t *testing.T) {
+	t.Skip()
 	base := NewVMBase(ConfigBase{
 		Path: "",
 	})
@@ -40,11 +42,14 @@ func TestBaseVm(t *testing.T) {
 	err = base.BeforeRun()
 	assert.NoError(t, err)
 
-	result, err := base.Run(common.TxContext{})
+	result, err := base.Run(fcom.TxContext{})
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 
 	err = base.AfterRun()
+	assert.NoError(t, err)
+
+	_, err = base.LogStatus()
 	assert.NoError(t, err)
 
 	base.Close()

@@ -1,0 +1,16 @@
+[engine]
+rate = 20                            # 速率
+duration = "20s"                     # 持续时间
+cap = 20                             # 客户端虚拟机数量
+urls = ["localhost:8080"]            # 若不设置或者长度为0则在本地启动worker
+
+[client]
+script = "benchmark/hyperchain/remote-evm/script.lua"  # 脚本
+type = "flato"                                         # 区块链类型
+config = "benchmark/hyperchain/remote-evm/hyperchain"  # 区块链SDK配置路径
+contract = "benchmark/hyperchain/remote-evm/contract"  # 合约目录路径
+plugin = "./hyperchain.so"                             # 插件路径
+
+[client.options] # 客户端选项
+
+

@@ -6,8 +6,11 @@ hyperbench
 result.html
 detail.js
 *.[oa]
-
+benchmark/ethereum/compare/
+benchmark/fabric/compare/
 assets
+*.so
+*.data
 visual
 vendor/github.com/mattn/go-sqlite3/
 logs/*

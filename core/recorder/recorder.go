@@ -6,7 +6,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/meshplus/hyperbench/core/utils"
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
@@ -15,14 +16,14 @@ import (
 // Recorder define the service a recorder need provide.
 type Recorder interface {
 	// Process process input report.
-	Process(input common.Report)
+	Process(input fcom.Report)
 	// Release source.
 	Release()
 	processor
 }
 
 type processor interface {
-	process(report common.Report)
+	process(report fcom.Report)
 	release()
 }
 
@@ -30,12 +31,12 @@ type processor interface {
 func NewRecorder() Recorder {
 	var ps []processor
 
-	logger := common.GetLogger("recd")
+	logger := fcom.GetLogger("recd")
 	ps = append(ps, newLogProcessor(logger))
 
 	// csv
-	if viper.IsSet(common.RecorderCsvPath) {
-		dirPath := viper.GetString(common.RecorderCsvDirPath)
+	if viper.IsSet(fcom.RecorderCsvPath) {
+		dirPath := viper.GetString(fcom.RecorderCsvDirPath)
 		if dirPath == "" {
 			dirPath = "./csv"
 		}
@@ -87,11 +88,11 @@ type baseRecorder struct {
 }
 
 // Process process input report.
-func (b *baseRecorder) Process(input common.Report) {
+func (b *baseRecorder) Process(input fcom.Report) {
 	b.process(input)
 }
 
-func (b *baseRecorder) process(report common.Report) {
+func (b *baseRecorder) process(report fcom.Report) {
 	for _, p := range b.ps {
 		p.process(report)
 	}
@@ -107,7 +108,7 @@ func newLogProcessor(logger *logging.Logger) *logProcessor {
 	}
 }
 
-func (p *logProcessor) process(report common.Report) {
+func (p *logProcessor) process(report fcom.Report) {
 	p.logger.Notice("")
 	p.logTitle()
 	p.logData("Cur  ", report.Cur)
@@ -121,7 +122,7 @@ func (p *logProcessor) logTitle() {
 	p.logger.Notice("state\tnum \tdu(s)\t|\tsend\tsucc\tfail\tconf\tunkn\t|\tsend\tconf\twrit")
 }
 
-func (p *logProcessor) logData(t string, data *common.Data) {
+func (p *logProcessor) logData(t string, data *fcom.Data) {
 	for _, d := range data.Results {
 		du := float64(d.Duration) / float64(time.Second)
 		p.logger.Noticef("%s\t%d\t%v\t|\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t|\t%.1f\t%.1f\t%.1f",
@@ -129,10 +130,10 @@ func (p *logProcessor) logData(t string, data *common.Data) {
 			d.Num,
 			int(du),
 			float64(d.Num)/du,
-			float64(d.Statuses[common.Success])/du,
-			float64(d.Statuses[common.Failure])/du,
-			float64(d.Statuses[common.Confirm])/du,
-			float64(d.Statuses[common.Unknown])/du,
+			float64(d.Statuses[fcom.Success])/du,
+			float64(d.Statuses[fcom.Failure])/du,
+			float64(d.Statuses[fcom.Confirm])/du,
+			float64(d.Statuses[fcom.Unknown])/du,
 			float64(d.Send.Avg)/float64(time.Millisecond),
 			float64(d.Confirm.Avg)/float64(time.Millisecond),
 			float64(d.Write.Avg)/float64(time.Millisecond))
@@ -154,7 +155,7 @@ func newCSVProcessor(f *os.File) *csvProcessor {
 	}
 }
 
-func (p *csvProcessor) process(report common.Report) {
+func (p *csvProcessor) process(report fcom.Report) {
 	p.logData(report.Cur)
 	p.logData(report.Sum)
 }
@@ -163,7 +164,7 @@ func (p *csvProcessor) release() {
 	_ = p.f.Close()
 }
 
-func (p *csvProcessor) logData(data *common.Data) {
+func (p *csvProcessor) logData(data *fcom.Data) {
 	for _, d := range data.Results {
 		_ = p.writer.Write(utils.AggData2CSV(nil, data.Type, d))
 	}

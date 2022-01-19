@@ -1,13 +1,16 @@
 package master
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	"path/filepath"
+	"strings"
+
+	fcom "github.com/meshplus/hyperbench-common/common"
+
+	"github.com/meshplus/hyperbench/plugins/blockchain"
 	"github.com/meshplus/hyperbench/vm"
 	"github.com/meshplus/hyperbench/vm/base"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"path/filepath"
-	"strings"
 )
 
 // Master is the interface of mater node
@@ -19,7 +22,10 @@ type Master interface {
 	GetContext() ([]byte, error)
 
 	// Statistic query the remote statistic data from chain
-	Statistic(from, to int64) (*common.RemoteStatistic, error)
+	Statistic(from, to int64) (*fcom.RemoteStatistic, error)
+
+	// LogStatus records blockheight and time
+	LogStatus() (int64, error)
 }
 
 // LocalMaster is the implement of master in local
@@ -55,19 +61,25 @@ func (m *LocalMaster) GetContext() ([]byte, error) {
 }
 
 // Statistic query the remote statistic data from chain
-func (m *LocalMaster) Statistic(from, to int64) (*common.RemoteStatistic, error) {
+func (m *LocalMaster) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
 	return m.masterVM.Statistic(from, to)
+}
+
+// LogStatus records blockheight and time
+func (m *LocalMaster) LogStatus() (end int64, err error) {
+	return m.masterVM.LogStatus()
 }
 
 // NewLocalMaster create LocalMaster.
 func NewLocalMaster() (*LocalMaster, error) {
+	blockchain.InitPlugin()
 
-	params := viper.GetStringSlice(common.ClientContractArgsPath)
-	scriptPath := viper.GetString(common.ClientScriptPath)
+	params := viper.GetStringSlice(fcom.ClientContractArgsPath)
+	scriptPath := viper.GetString(fcom.ClientScriptPath)
 	vmType := strings.TrimPrefix(filepath.Ext(scriptPath), ".")
 	masterVM, err := vm.NewVM(vmType, base.ConfigBase{
 		Path: scriptPath,
-		Ctx: common.VMContext{
+		Ctx: fcom.VMContext{
 			WorkerIdx: -1,
 			VMIdx:     -1,
 		},

@@ -1,0 +1,25 @@
+[engine]
+rate = 20
+duration = "20s"
+cap = 3
+
+[client]
+script = "benchmark/ethereum/transfer/script.lua"   # 脚本
+type = "eth"                                        # 区块链类型
+config = "benchmark/ethereum/transfer/eth"          # 区块链SDK配置路径
+plugin = "./eth.so"                                 # 插件路径
+
+[client.options] # 客户端选项
+
+[recorder.log]
+dump=false
+dir="./logs"
+level="debug"
+
+[recorder.csv]
+dir="./csv"
+
+
+
+
+

@@ -7,7 +7,7 @@ import (
 	json "github.com/json-iterator/go"
 
 	"github.com/influxdata/tdigest"
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
 )
 
 const (
@@ -26,8 +26,8 @@ func NewTDigest() *TDigest {
 	return &td
 }
 
-func (t *TDigest) getLatency() common.Latency {
-	return common.Latency{
+func (t *TDigest) getLatency() fcom.Latency {
+	return fcom.Latency{
 		Avg:  t.avg(),
 		P0:   int64(t.Quantile(0)),
 		P50:  int64(t.Quantile(0.5)),
@@ -84,7 +84,7 @@ type Details struct {
 	SendLatency    *TDigest
 	ConfirmLatency *TDigest
 	WriteLatency   *TDigest
-	Status         map[common.Status]int
+	Status         map[fcom.Status]int
 }
 
 // NewDetails create a Details and return.
@@ -95,7 +95,7 @@ func NewDetails(label string) *Details {
 		SendLatency:    NewTDigest(),
 		ConfirmLatency: NewTDigest(),
 		WriteLatency:   NewTDigest(),
-		Status:         make(map[common.Status]int),
+		Status:         make(map[fcom.Status]int),
 	}
 }
 
@@ -113,7 +113,7 @@ func (d *Details) merge(src *Details) {
 	}
 }
 
-func (d *Details) add(result *common.Result) {
+func (d *Details) add(result *fcom.Result) {
 	if result == nil || result.BuildTime == 0 {
 		return
 	}
@@ -142,7 +142,7 @@ func newTDigestDetailsCollector() *TDigestDetailsCollector {
 }
 
 // Add append result to statistic
-func (t *TDigestDetailsCollector) Add(result *common.Result) {
+func (t *TDigestDetailsCollector) Add(result *fcom.Result) {
 	var (
 		cur   *Details
 		exist bool
@@ -186,14 +186,14 @@ func (t *TDigestDetailsCollector) MergeC(collector Collector) (err error) {
 }
 
 // Get get current statistic data group by label
-func (t *TDigestDetailsCollector) Get() *common.Data {
-	data := &common.Data{
-		Results: make([]common.AggData, 0, len(t.Data)),
+func (t *TDigestDetailsCollector) Get() *fcom.Data {
+	data := &fcom.Data{
+		Results: make([]fcom.AggData, 0, len(t.Data)),
 	}
 	now := time.Now().UnixNano()
 	duration := now - t.Time
 	for _, v := range t.Data {
-		r := common.AggData{
+		r := fcom.AggData{
 			Label:    v.Label,
 			Time:     t.Time,
 			Duration: duration,
@@ -241,7 +241,7 @@ func NewTDigestSummaryCollector() Collector {
 }
 
 // Add append result to statistic
-func (t *TDigestSummaryCollector) Add(result *common.Result) {
+func (t *TDigestSummaryCollector) Add(result *fcom.Result) {
 	t.Data.add(result)
 }
 
@@ -271,14 +271,14 @@ func (t *TDigestSummaryCollector) MergeC(collector Collector) (err error) {
 }
 
 // Get get current statistic data group by label
-func (t *TDigestSummaryCollector) Get() *common.Data {
-	data := &common.Data{
-		Results: make([]common.AggData, 0, 1),
+func (t *TDigestSummaryCollector) Get() *fcom.Data {
+	data := &fcom.Data{
+		Results: make([]fcom.AggData, 0, 1),
 	}
 	now := time.Now().UnixNano()
 	duration := now - t.Time
 	v := t.Data
-	r := common.AggData{
+	r := fcom.AggData{
 		Label:    v.Label,
 		Time:     t.Time,
 		Duration: duration,

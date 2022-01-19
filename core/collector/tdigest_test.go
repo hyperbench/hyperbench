@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/influxdata/tdigest"
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,12 +34,12 @@ func BenchmarkTDigestCollector_Add(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		//n := rand.Int63n(1000)
-		td.Add(&common.Result{
+		td.Add(&fcom.Result{
 			Label:     "test",
 			BuildTime: 1,
 			SendTime:  int64(i),
 			//Latency: n,
-			Status: common.Success,
+			Status: fcom.Success,
 			Ret:    nil,
 		})
 	}
@@ -53,11 +54,11 @@ func BenchmarkTDigestCollector_Serialize(b *testing.B) {
 	n := 100000
 	for i := 0; i < n; i++ {
 		r := rand.Int63n(1000)
-		td.Add(&common.Result{
+		td.Add(&fcom.Result{
 			Label:     "test",
 			BuildTime: 0,
 			SendTime:  r,
-			Status:    common.Success,
+			Status:    fcom.Success,
 			Ret:       nil,
 		})
 	}
@@ -76,11 +77,11 @@ func BenchmarkTDigestCollector_Merge(b *testing.B) {
 	n := 100000
 	for i := 0; i < n; i++ {
 		r := rand.Int63n(1000)
-		td.Add(&common.Result{
+		td.Add(&fcom.Result{
 			Label:     "test",
 			BuildTime: 0,
 			SendTime:  r,
-			Status:    common.Success,
+			Status:    fcom.Success,
 			Ret:       nil,
 		})
 	}
@@ -124,8 +125,8 @@ func TestTDigestDetailsCollector(t *testing.T) {
 	assert.Equal(t, col1.Type(), "details")
 	assert.Equal(t, col2.Type(), "details")
 
-	res1 := &common.Result{}
-	res2 := &common.Result{
+	res1 := &fcom.Result{}
+	res2 := &fcom.Result{
 		BuildTime:   time.Now().UnixNano(),
 		SendTime:    time.Now().UnixNano(),
 		ConfirmTime: time.Now().UnixNano(),
@@ -167,8 +168,8 @@ func TestTDigestSummaryCollector(t *testing.T) {
 	assert.Equal(t, col1.Type(), "summary")
 	assert.Equal(t, col2.Type(), "summary")
 
-	res1 := &common.Result{}
-	res2 := &common.Result{
+	res1 := &fcom.Result{}
+	res2 := &fcom.Result{
 		BuildTime: time.Now().UnixNano(),
 	}
 

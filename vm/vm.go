@@ -1,7 +1,8 @@
 package vm
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/meshplus/hyperbench/vm/base"
 	"github.com/meshplus/hyperbench/vm/lua"
 )
@@ -25,7 +26,9 @@ type MasterVM interface {
 	// GetContext generate context for execute tx in vm.
 	GetContext() ([]byte, error)
 	// Statistic statistic remote execute info.
-	Statistic(from, to int64) (*common.RemoteStatistic, error)
+	Statistic(from, to int64) (*fcom.RemoteStatistic, error)
+	// LogStatus records blockheight and time
+	LogStatus() (int64, error)
 }
 
 // BaseVM is the part interface of VM that will be called in both master and worker
@@ -45,7 +48,7 @@ type WorkerVM interface {
 	// BeforeRun will call once before run.
 	BeforeRun() error
 	// Run create and send tx to client.
-	Run(ctx common.TxContext) (*common.Result, error)
+	Run(ctx fcom.TxContext) (*fcom.Result, error)
 	// AfterRun will call once after run.
 	AfterRun() error
 }

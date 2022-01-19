@@ -29,7 +29,7 @@ func TestLocalWorker(t *testing.T) {
 
 	time.Sleep(time.Second * 5)
 
-	col, b := localWorker.CheckoutCollector()
+	col, b, _ := localWorker.CheckoutCollector()
 	assert.NotNil(t, col)
 	assert.NotNil(t, b)
 
