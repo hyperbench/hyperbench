@@ -6,10 +6,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/meshplus/hyperbench/core/collector"
 	"github.com/meshplus/hyperbench/core/engine"
 	"github.com/meshplus/hyperbench/core/vmpool"
+	"github.com/meshplus/hyperbench/plugins/blockchain"
 	"github.com/meshplus/hyperbench/vm"
 )
 
@@ -19,11 +21,11 @@ type LocalWorker struct {
 	eg        engine.Engine
 	pool      vmpool.Pool
 	collector collector.Collector
-	idx       common.TxIndex
+	idx       fcom.TxIndex
 	wg        sync.WaitGroup
 	ctx       context.Context
 	cancel    context.CancelFunc
-	resultCh  chan *common.Result
+	resultCh  chan *fcom.Result
 	done      chan struct{}
 	colRet    chan collector.Collector
 	colReq    chan struct{}
@@ -39,9 +41,11 @@ type LocalWorkerConfig struct {
 
 // NewLocalWorker create LocalWorker.
 func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
+	blockchain.InitPlugin()
+
 	localWorker := LocalWorker{
 		collector: collector.NewTDigestSummaryCollector(),
-		resultCh:  make(chan *common.Result, 1024),
+		resultCh:  make(chan *fcom.Result, 1024),
 		done:      make(chan struct{}),
 		colReq:    make(chan struct{}),
 		colRet:    make(chan collector.Collector),
@@ -60,7 +64,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	}
 
 	// init index
-	idx := common.TxIndex{
+	idx := fcom.TxIndex{
 		EngineIdx: config.Index,
 		TxIdx:     -1,
 	}
@@ -149,7 +153,7 @@ func (l *LocalWorker) asyncJob() {
 		return
 	}
 
-	res, err := v.Run(common.TxContext{
+	res, err := v.Run(fcom.TxContext{
 		Context: l.ctx,
 		TxIndex: l.atomicAddIndex(),
 	})
@@ -159,7 +163,7 @@ func (l *LocalWorker) asyncJob() {
 	l.resultCh <- res
 }
 
-func (l *LocalWorker) atomicAddIndex() (idx common.TxIndex) {
+func (l *LocalWorker) atomicAddIndex() (idx fcom.TxIndex) {
 	idx.EngineIdx = atomic.LoadInt64(&l.idx.EngineIdx)
 	idx.TxIdx = atomic.AddInt64(&l.idx.TxIdx, 1)
 	return
@@ -172,9 +176,9 @@ func (l *LocalWorker) Teardown() {
 }
 
 // CheckoutCollector checkout collector.
-func (l *LocalWorker) CheckoutCollector() (collector.Collector, bool) {
+func (l *LocalWorker) CheckoutCollector() (collector.Collector, bool, error) {
 	c, b := <-l.colRet
-	return c, b
+	return c, b, nil
 }
 
 // Done close the worker.

@@ -4,14 +4,34 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/meshplus/hyperbench/plugins/blockchain/base"
+	"github.com/meshplus/hyperbench-common/base"
+	fcom "github.com/meshplus/hyperbench-common/common"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuin/gluamapper"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
 )
 
+func TestInitPlugin(t *testing.T) {
+	t.Skip()
+	InitPlugin()
+
+	viper.Set(fcom.ClientTypePath, "hyperchain")
+	InitPlugin()
+
+	viper.Set(fcom.ClientTypePath, "fabric")
+	InitPlugin()
+
+	viper.Set(fcom.ClientTypePath, "eth")
+	InitPlugin()
+
+	viper.Set(fcom.ClientTypePath, "xuperchain")
+	InitPlugin()
+
+}
 func TestNewBlockchain(t *testing.T) {
+	t.Skip()
 	bk, err := NewBlockchain(base.ClientConfig{})
 	assert.NotNil(t, bk)
 	assert.NoError(t, err)
@@ -29,6 +49,12 @@ func TestNewBlockchain(t *testing.T) {
 	}()
 	bk, err = NewBlockchain(base.ClientConfig{
 		ClientType: "fabric",
+	})
+	assert.Nil(t, bk)
+	assert.Error(t, err)
+
+	bk, err = NewBlockchain(base.ClientConfig{
+		ClientType: "xuperchain",
 	})
 	assert.Nil(t, bk)
 	assert.Error(t, err)

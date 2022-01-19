@@ -3,15 +3,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/meshplus/hyperbench/core/network/server"
 	"time"
+
+	"github.com/meshplus/hyperbench/core/network/server"
 
 	"github.com/op/go-logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/viper"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/meshplus/hyperbench/core/controller"
 	"github.com/meshplus/hyperbench/filesystem"
 )
@@ -26,7 +28,7 @@ var (
 
 //InitCmd init cobra command
 func InitCmd(debug func()) error {
-	logger = common.GetLogger("cmd")
+	logger = fcom.GetLogger("cmd")
 	debugF = debug
 
 	cobra.OnInitialize(initConfig)
@@ -74,7 +76,7 @@ func addRun() {
 	}
 
 	worker.Run = func(cmd *cobra.Command, args []string) {
-		common.InitLog()
+		fcom.InitLog()
 		svr := server.NewServer(*port)
 		err := svr.Start()
 		if err != nil {
@@ -106,8 +108,8 @@ func initBenchmark(dir string) {
 		logger.Critical("can not read in config: %v", err)
 		return
 	}
-	viper.Set(common.BenchmarkDirPath, dir)
-	common.InitLog()
+	viper.Set(fcom.BenchmarkDirPath, dir)
+	fcom.InitLog()
 }
 
 func runBenchmark(dir string) {

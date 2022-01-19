@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"strconv"
 )
 
 // AggData2CSV append data's fields to base,
-func AggData2CSV(base []string, t common.DataType, data common.AggData) []string {
+func AggData2CSV(base []string, t fcom.DataType, data fcom.AggData) []string {
 	if base == nil {
 		base = make([]string, 0, 30)
 	}
@@ -16,10 +17,10 @@ func AggData2CSV(base []string, t common.DataType, data common.AggData) []string
 		i2s(data.Time),
 		i2s(data.Duration),
 		i2s(data.Num),
-		i2s(data.Statuses[common.Failure]),
-		i2s(data.Statuses[common.Success]),
-		i2s(data.Statuses[common.Confirm]),
-		i2s(data.Statuses[common.Unknown]))
+		i2s(data.Statuses[fcom.Failure]),
+		i2s(data.Statuses[fcom.Success]),
+		i2s(data.Statuses[fcom.Confirm]),
+		i2s(data.Statuses[fcom.Unknown]))
 	base = Latency2CSV(base, data.Send)
 	base = Latency2CSV(base, data.Confirm)
 	base = Latency2CSV(base, data.Write)
@@ -27,7 +28,7 @@ func AggData2CSV(base []string, t common.DataType, data common.AggData) []string
 }
 
 // Latency2CSV append latency's fields to base
-func Latency2CSV(base []string, latency common.Latency) []string {
+func Latency2CSV(base []string, latency fcom.Latency) []string {
 	if base == nil {
 		base = make([]string, 0, 7)
 	}

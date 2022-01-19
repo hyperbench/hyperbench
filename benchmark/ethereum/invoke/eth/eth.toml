@@ -1,0 +1,3 @@
+[rpc]
+node = "http://localhost"
+port = "8545"

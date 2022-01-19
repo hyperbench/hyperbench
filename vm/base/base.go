@@ -1,7 +1,8 @@
 package base
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/op/go-logging"
 )
 
@@ -18,7 +19,6 @@ func (v *VMBase) Type() string {
 
 // Close close vm.
 func (v *VMBase) Close() {
-	return
 }
 
 // BeforeDeploy will call before deploy contract.
@@ -42,8 +42,13 @@ func (v *VMBase) GetContext() ([]byte, error) {
 }
 
 // Statistic statistic remote execute info.
-func (v *VMBase) Statistic(from, to int64) (*common.RemoteStatistic, error) {
-	return &common.RemoteStatistic{}, nil
+func (v *VMBase) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
+	return &fcom.RemoteStatistic{}, nil
+}
+
+// LogStatus records blockheight and time
+func (v *VMBase) LogStatus() (int64, error) {
+	return 0, nil
 }
 
 // BeforeSet will call before set context.
@@ -62,8 +67,8 @@ func (v *VMBase) BeforeRun() error {
 }
 
 // Run create and send tx to client.
-func (v *VMBase) Run(ctx common.TxContext) (*common.Result, error) {
-	return &common.Result{}, nil
+func (v *VMBase) Run(ctx fcom.TxContext) (*fcom.Result, error) {
+	return &fcom.Result{}, nil
 }
 
 // AfterRun will call once after run.
@@ -76,13 +81,13 @@ type ConfigBase struct {
 	// Path is the path of script file
 	Path string
 	// Ctx is the context of vm
-	Ctx common.VMContext
+	Ctx fcom.VMContext
 }
 
 // NewVMBase use given config create VMBase.
 func NewVMBase(config ConfigBase) *VMBase {
 	return &VMBase{
 		ConfigBase: config,
-		Logger:     common.GetLogger("vm"),
+		Logger:     fcom.GetLogger("vm"),
 	}
 }

@@ -1,33 +1,46 @@
 package blockchain
 
 import (
-	"github.com/meshplus/hyperbench/common"
-	"github.com/meshplus/hyperbench/plugins/blockchain/base"
-	bcom "github.com/meshplus/hyperbench/plugins/blockchain/common"
-	"github.com/meshplus/hyperbench/plugins/blockchain/eth"
-	"github.com/meshplus/hyperbench/plugins/blockchain/fabric"
-	"github.com/meshplus/hyperbench/plugins/blockchain/hyperchain"
+	"errors"
+	"fmt"
+	"plugin"
+	"reflect"
+
+	"github.com/op/go-logging"
+	"github.com/meshplus/hyperbench-common/base"
+	fcom "github.com/meshplus/hyperbench-common/common"
+	"github.com/spf13/viper"
 )
 
-const (
-	clientHpc    = "hyperchain"
-	clientFlato  = "flato"
-	clientFabric = "fabric"
-	clientEth    = "eth"
-)
+var plugins *plugin.Plugin
+var log *logging.Logger
+
+func InitPlugin() {
+	log = fcom.GetLogger("blockchain")
+	filePath := viper.GetString(fcom.ClientPluginPath)
+
+	p, err := plugin.Open(filePath)
+	if err != nil {
+		log.Errorf("plugin failed: %v", err)
+	}
+	plugins = p
+}
 
 // NewBlockchain create blockchain with different client type.
 func NewBlockchain(clientConfig base.ClientConfig) (client Blockchain, err error) {
 	clientBase := base.NewBlockchainBase(clientConfig)
-	switch clientConfig.ClientType {
-	case clientHpc, clientFlato:
-		client, err = hyperchain.NewClient(clientBase)
-	case clientFabric:
-		client, err = fabric.New(clientBase)
-	case clientEth:
-		client, err = eth.New(clientBase)
-	default:
-		client = clientBase
+	newFunc, err := plugins.Lookup("New")
+	if err != nil {
+		log.Errorf("plugin failed: %v", err)
+	}
+	New, _ := newFunc.(func(blockchainBase *base.BlockchainBase) (client interface{}, err error))
+	Client, err := New(clientBase)
+	if err != nil {
+		return nil, err
+	}
+	client, ok := Client.(Blockchain)
+	if !ok {
+		return nil, errors.New(fmt.Sprint(reflect.TypeOf(client)) + " is not blockchain.Blockchain")
 	}
 	return
 }
@@ -39,19 +52,19 @@ type Blockchain interface {
 	DeployContract() error
 
 	// Invoke just invoke the contract
-	Invoke(bcom.Invoke, ...bcom.Option) *common.Result
+	Invoke(fcom.Invoke, ...fcom.Option) *fcom.Result
 
 	// Transfer a amount of money from a account to the other one
-	Transfer(bcom.Transfer, ...bcom.Option) *common.Result
+	Transfer(fcom.Transfer, ...fcom.Option) *fcom.Result
 
 	// Confirm check the result of `Invoke` or `Transfer`
-	Confirm(*common.Result, ...bcom.Option) *common.Result
+	Confirm(*fcom.Result, ...fcom.Option) *fcom.Result
 
 	// Query do some query
-	Query(bcom.Query, ...bcom.Option) interface{}
+	Query(fcom.Query, ...fcom.Option) interface{}
 
 	// Option pass the options to affect the action of client
-	Option(bcom.Option) error
+	Option(fcom.Option) error
 
 	// GetContext Generate TxContext based on New/Init/DeployContract
 	// GetContext will only be run in master
@@ -69,5 +82,8 @@ type Blockchain interface {
 
 	// Statistic query the statistics information in the time interval defined by
 	// nanosecond-level timestamps `from` and `to`
-	Statistic(statistic bcom.Statistic) (*common.RemoteStatistic, error)
+	Statistic(statistic fcom.Statistic) (*fcom.RemoteStatistic, error)
+
+	// LogStatus records blockheight and time
+	LogStatus() (int64, error)
 }

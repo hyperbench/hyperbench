@@ -1,12 +1,14 @@
 package worker
 
 import (
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
+	"os"
+
 	"github.com/meshplus/hyperbench/core/collector"
 	"github.com/mholt/archiver/v3"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"os"
 )
 
 // Worker is the interface of worker node
@@ -18,7 +20,7 @@ type Worker interface {
 	Do() error
 
 	// CheckoutCollector checkout collector.
-	CheckoutCollector() (collector.Collector, bool)
+	CheckoutCollector() (collector.Collector, bool, error)
 
 	// Teardown close the worker manually.
 	Teardown()
@@ -40,15 +42,15 @@ func NewWorkers() (workers []Worker, err error) {
 		}
 	}()
 
-	urls := viper.GetStringSlice(common.EngineURLsPath)
+	urls := viper.GetStringSlice(fcom.EngineURLsPath)
 	if len(urls) == 0 {
 		var localWorkerConfig LocalWorkerConfig
-		localWorkerConfig.Cap = viper.GetInt64(common.EngineCapPath)
+		localWorkerConfig.Cap = viper.GetInt64(fcom.EngineCapPath)
 		localWorker, err := NewLocalWorker(LocalWorkerConfig{
 			Index:    0,
-			Cap:      viper.GetInt64(common.EngineCapPath),
-			Rate:     viper.GetInt64(common.EngineRatePath),
-			Duration: viper.GetDuration(common.EngineDurationPath),
+			Cap:      viper.GetInt64(fcom.EngineCapPath),
+			Rate:     viper.GetInt64(fcom.EngineRatePath),
+			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 		if err != nil {
 			return nil, ErrConfig
@@ -58,14 +60,15 @@ func NewWorkers() (workers []Worker, err error) {
 		}
 	} else {
 		// create archive for sync benchmark context
-		p := viper.GetString(common.BenchmarkDirPath)
+		p := viper.GetString(fcom.BenchmarkDirPath)
 
 		target := p + ".tar.gz"
+		os.RemoveAll(target)
 		err := archiver.Archive([]string{p}, target)
 		if err != nil {
 			return nil, errors.Wrapf(err, "can not archive: %v", target)
 		}
-		viper.Set(common.BenchmarkArchivePath, target)
+		viper.Set(fcom.BenchmarkArchivePath, target)
 		// remove archiver
 		// nolint
 		defer os.RemoveAll(target)

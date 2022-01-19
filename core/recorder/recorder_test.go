@@ -7,7 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,15 +18,15 @@ func TestRecorder(t *testing.T) {
 	recorder := NewRecorder()
 	assert.NotNil(t, recorder)
 
-	recorder.Process(common.Report{
-		Cur: &common.Data{
-			Results: []common.AggData{
-				common.AggData{
+	recorder.Process(fcom.Report{
+		Cur: &fcom.Data{
+			Results: []fcom.AggData{
+				fcom.AggData{
 					Label: "11",
 				},
 			},
 		},
-		Sum: &common.Data{},
+		Sum: &fcom.Data{},
 	})
 
 	assert.NotNil(t, GetCSVPath())
@@ -97,5 +98,5 @@ func BenchmarkWrite(b *testing.B) {
 }
 
 func TestLogTile(t *testing.T) {
-	newLogProcessor(common.GetLogger("test")).logTitle()
+	newLogProcessor(fcom.GetLogger("test")).logTitle()
 }

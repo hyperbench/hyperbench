@@ -2,19 +2,21 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/meshplus/hyperbench/common"
-	"github.com/meshplus/hyperbench/core/controller/worker"
-	"github.com/meshplus/hyperbench/core/network"
-	"github.com/mholt/archiver/v3"
-	"github.com/op/go-logging"
-	"github.com/spf13/cast"
-	"github.com/spf13/viper"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/meshplus/hyperbench/core/controller/worker"
+	"github.com/meshplus/hyperbench/core/network"
+	"github.com/mholt/archiver/v3"
+	"github.com/op/go-logging"
+	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 // Server is used to receive info from master.
@@ -41,7 +43,7 @@ func NewServer(port int) *Server {
 	}
 
 	return &Server{
-		logger: common.GetLogger("svr"),
+		logger: fcom.GetLogger("svr"),
 		nonce:  idleNonce,
 		port:   ":" + cast.ToString(port),
 	}
@@ -90,7 +92,10 @@ func (s *Server) Start() error {
 			c.String(http.StatusNotAcceptable, "need file")
 			return
 		}
+
+		s.removeBenchmark(f.Filename)
 		s.logger.Noticef("upload %v", f.Filename)
+
 		s.fp = s.getFilePath(f.Filename)
 		s.createBenchmark()
 		err = c.SaveUploadedFile(f, s.fp)
@@ -102,9 +107,13 @@ func (s *Server) Start() error {
 		s.logger.Notice("fp", s.fp)
 		err = archiver.Unarchive(s.fp, benchmarkPath)
 		if err != nil {
-			s.logger.Errorf("can not open file: %v", err)
-			c.String(http.StatusNotAcceptable, "can not open file")
-			return
+			if strings.Contains(err.Error(), "file already exists") {
+				s.logger.Errorf("can not open file: %v", err)
+			} else {
+				s.logger.Errorf("can not open file: %v", err)
+				c.String(http.StatusNotAcceptable, "can not open file")
+				return
+			}
 		}
 		_ = os.RemoveAll(s.fp)
 		s.fp = strings.TrimSuffix(s.fp, ".tar.gz")
@@ -143,7 +152,7 @@ func (s *Server) Start() error {
 			return
 		}
 
-		l := len(viper.GetStringSlice(common.EngineURLsPath))
+		l := len(viper.GetStringSlice(fcom.EngineURLsPath))
 		if l < s.index || l == 0 {
 			s.logger.Error("config error")
 			c.String(http.StatusNotAcceptable, "config error")
@@ -152,9 +161,9 @@ func (s *Server) Start() error {
 
 		s.workerHandle, err = worker.NewLocalWorker(worker.LocalWorkerConfig{
 			Index:    int64(s.index),
-			Cap:      int64(viper.GetInt(common.EngineCapPath) / l),
-			Rate:     int64(viper.GetInt(common.EngineRatePath) / l),
-			Duration: viper.GetDuration(common.EngineDurationPath),
+			Cap:      int64(viper.GetInt(fcom.EngineCapPath) / l),
+			Rate:     int64(viper.GetInt(fcom.EngineRatePath) / l),
+			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 
 		if err != nil {
@@ -223,7 +232,10 @@ func (s *Server) Start() error {
 			return
 		}
 
-		col, valid := s.workerHandle.CheckoutCollector()
+		col, valid, err := s.workerHandle.CheckoutCollector()
+		if err != nil {
+			//todo add something for err
+		}
 		var t, data string
 		if col != nil {
 			t = col.Type()
@@ -252,7 +264,7 @@ func (s *Server) Start() error {
 		}
 
 		s.nonce = idleNonce
-		s.removeBenchmark()
+		//s.removeBenchmark()
 		viper.Reset()
 		c.String(http.StatusOK, "ok")
 	})
@@ -285,6 +297,6 @@ func (s *Server) createBenchmark() {
 	}
 }
 
-func (s *Server) removeBenchmark() {
-	_ = os.RemoveAll(benchmarkPath)
+func (s *Server) removeBenchmark(fileName string) {
+	_ = os.Remove(fileName)
 }

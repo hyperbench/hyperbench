@@ -2,13 +2,16 @@ package filesystem
 
 import (
 	"bytes"
+
 	"github.com/gobuffalo/packr/v2"
-	"github.com/meshplus/hyperbench/common"
-	"github.com/pingcap/failpoint"
-	"github.com/pkg/errors"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/pingcap/failpoint"
+	"github.com/pkg/errors"
 )
 
 //go:generate rm -rf assets ; mkdir assets ; cp -r golua assets; cp -r config assets ; cp -r benchmark assets
@@ -18,7 +21,7 @@ const AssetsPath = "assets"
 
 //FileSystem the folder on a disk
 var FileSystem = packr.New(AssetsPath, AssetsPath)
-var logger = common.GetLogger("filesystem")
+var logger = fcom.GetLogger("filesystem")
 
 //Unpack unpack the path with prefix
 func Unpack(prefix string) error {

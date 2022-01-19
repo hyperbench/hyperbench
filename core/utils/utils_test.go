@@ -9,7 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/hyperbench/common"
+	fcom "github.com/meshplus/hyperbench-common/common"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -21,12 +22,12 @@ type TestConfig struct {
 }
 
 func TestUtils(t *testing.T) {
-	a := AggData2CSV(nil, "", common.AggData{
+	a := AggData2CSV(nil, "", fcom.AggData{
 		Label: "11",
 	})
 	assert.NotNil(t, a)
 
-	b := Latency2CSV(nil, common.Latency{})
+	b := Latency2CSV(nil, fcom.Latency{})
 	assert.NotNil(t, b)
 
 	i := uint(1)

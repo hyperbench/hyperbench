@@ -1,6 +1,8 @@
 package collector
 
-import "github.com/meshplus/hyperbench/common"
+import (
+	fcom "github.com/meshplus/hyperbench-common/common"
+)
 
 // Collector is used to collect result and generate statistic data group by label
 // Collector may not be implement concurrently safe, so you should receive data in a goroutine
@@ -9,7 +11,7 @@ type Collector interface {
 	Type() string
 
 	// Add append result to statistic
-	Add(*common.Result)
+	Add(*fcom.Result)
 
 	// Serialize generate serialized data to pass through network in remote mode
 	Serialize() []byte
@@ -21,7 +23,7 @@ type Collector interface {
 	MergeC(Collector) error
 
 	// Get get current statistic data group by label
-	Get() *common.Data
+	Get() *fcom.Data
 
 	// Reset reset data should reset the time window and clean data
 	Reset()
