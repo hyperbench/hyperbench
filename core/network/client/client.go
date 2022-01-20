@@ -29,13 +29,12 @@ const (
 
 // Client is used to communicate with worker by master.
 type Client struct {
-	url      string
-	nonce    string
-	index    int
-	logger   *logging.Logger
-	path     string
-	err      error
-	finished bool
+	url    string
+	nonce  string
+	index  int
+	logger *logging.Logger
+	path   string
+	err    error
 }
 
 // NewClient create Client.
@@ -153,10 +152,22 @@ func (c *Client) Teardown() {
 	}
 }
 
+// BeforeRun call user hook
+func (c *Client) BeforeRun() error {
+	defer c.teardownWhileErr()
+	return c.callWithValues("before run", network.BeforeRunPath, url.Values{"nonce": {c.nonce}})
+}
+
 // Do call the workers to running
 func (c *Client) Do() error {
 	defer c.teardownWhileErr()
 	return c.callWithValues("do", network.DoPath, url.Values{"nonce": {c.nonce}})
+}
+
+// AfterRun call user hook
+func (c *Client) AfterRun() error {
+	defer c.teardownWhileErr()
+	return c.callWithValues("after run", network.AfterRunPath, url.Values{"nonce": {c.nonce}})
 }
 
 func (c *Client) teardownWhileErr() {

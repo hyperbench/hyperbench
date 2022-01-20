@@ -378,12 +378,12 @@ package lua
 import (
 	"errors"
 
+	base2 "github.com/meshplus/hyperbench-common/base"
+	fcom "github.com/meshplus/hyperbench-common/common"
 	"github.com/meshplus/hyperbench/plugins/blockchain"
 	idex "github.com/meshplus/hyperbench/plugins/index"
 	"github.com/meshplus/hyperbench/plugins/toolkit"
 	"github.com/meshplus/hyperbench/vm/base"
-	base2 "github.com/meshplus/hyperbench-common/base"
-	fcom "github.com/meshplus/hyperbench-common/common"
 	"github.com/spf13/viper"
 	lua "github.com/yuin/gopher-lua"
 	luar "layeh.com/gopher-luar"
@@ -500,6 +500,7 @@ func (v *VM) injectTestcaseBase() {
 	v.vm.SetField(mt, lIndex, v.vm.SetFuncs(v.vm.NewTable(), map[string]lua.LGFunction{
 		beforeDeploy: empty,
 		beforeGet:    empty,
+		beforeSet:    empty,
 		beforeRun:    empty,
 		run:          result,
 		afterRun:     empty,

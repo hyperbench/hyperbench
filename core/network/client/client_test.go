@@ -27,6 +27,7 @@ func TestClient(t *testing.T) {
 	m["engine.rate"] = 1
 	m["engine.duration"] = 5
 	m["engine.cap"] = 1
+	m["client.plugin"] = "hyperchain.so"
 	viper.MergeConfigMap(m)
 
 	err = cli.TestsetNonce()
@@ -35,14 +36,20 @@ func TestClient(t *testing.T) {
 	err = cli.Testinit()
 	assert.NoError(t, err)
 
+	err = cli.SetContext(nil)
+	assert.NoError(t, err)
+
+	err = cli.BeforeRun()
+	assert.NoError(t, err)
+
 	go cli.Do()
 
 	go cli.CheckoutCollector()
 
 	time.Sleep(time.Second * 2)
 
-	err = cli.SetContext(nil)
-	assert.Error(t, err)
+	err = cli.AfterRun()
+	assert.NoError(t, err)
 
 	cli.Teardown()
 

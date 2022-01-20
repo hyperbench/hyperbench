@@ -14,8 +14,12 @@ const (
 	InitPath = "/init"
 	// SetContextPath set context path.
 	SetContextPath = "/set-context"
+	// BeforeRunPath before run path.
+	BeforeRunPath = "/before-run"
 	// DoPath do path.
 	DoPath = "/do"
+	// AfterRunPath after run path.
+	AfterRunPath = "/after-run"
 	// TeardownPath teardown path.
 	TeardownPath = "/teardown"
 	// CheckoutCollectorPath checkout collector path.

@@ -115,7 +115,10 @@ func (l *ControllerImpl) Prepare() (err error) {
 // Run start the job
 func (l *ControllerImpl) Run() (err error) {
 	defer l.teardownWorkers()
-
+	// beforeRun
+	for _, w := range l.workerClients {
+		w.worker.BeforeRun()
+	}
 	// run all workers
 	duration := viper.GetDuration(fcom.EngineDurationPath)
 	l.start = time.Now().UnixNano()
@@ -145,6 +148,10 @@ func (l *ControllerImpl) Run() (err error) {
 	}
 
 	l.recorder.Release()
+	// afterRun
+	for _, w := range l.workerClients {
+		w.worker.AfterRun()
+	}
 	sd, err := l.master.Statistic(l.start, l.end)
 	if err != nil {
 		l.logger.Notice(err)
