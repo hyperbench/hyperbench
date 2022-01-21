@@ -1,4 +1,4 @@
-// Package net is used to distribute controlling
+// Package network is used to distribute controlling
 package network
 
 import (

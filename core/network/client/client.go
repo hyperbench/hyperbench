@@ -1,4 +1,3 @@
-// net is the
 package client
 
 import (
@@ -214,10 +213,12 @@ func (c *Client) init() error {
 	return c.callWithValues("init", network.InitPath, url.Values{"nonce": {c.nonce}, "index": {strconv.Itoa(c.index)}})
 }
 
+// Testinit used for unit test
 func (c *Client) Testinit() error {
 	return c.init()
 }
 
+// TestsetNonce used for unit test
 func (c *Client) TestsetNonce() error {
 	return c.setNonce()
 }

@@ -1,0 +1,6 @@
+services:
+  hyperchain:
+    image: hyperchaincn/solo:v2.0.0
+    ports:
+      - "8081:8081"
+    container_name: hyperchain
