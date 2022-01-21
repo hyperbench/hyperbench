@@ -21,6 +21,9 @@ func TestLocalWorker(t *testing.T) {
 	err = localWorker.SetContext(bs)
 	assert.NoError(t, err)
 
+	err = localWorker.BeforeRun()
+	assert.NoError(t, err)
+
 	var vm vm.VM
 	assert.NotNil(t, localWorker.pool.Pop())
 	localWorker.pool.Push(vm)
@@ -28,6 +31,9 @@ func TestLocalWorker(t *testing.T) {
 	assert.NoError(t, err)
 
 	time.Sleep(time.Second * 5)
+
+	err = localWorker.AfterRun()
+	assert.NoError(t, err)
 
 	col, b, _ := localWorker.CheckoutCollector()
 	assert.NotNil(t, col)

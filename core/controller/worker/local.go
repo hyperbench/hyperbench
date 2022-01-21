@@ -79,16 +79,24 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	return &localWorker, nil
 }
 
-//func engineCreator(t engine.Type) engine
-
 // SetContext set the context of worker passed from Master
-func (l *LocalWorker) SetContext(bs []byte) error {
-	var err error
+func (l *LocalWorker) SetContext(bs []byte) (err error) {
 	l.pool.Walk(func(v vm.VM) bool {
 		if err = v.BeforeSet(); err != nil {
 			return true
 		}
 		if err = v.SetContext(bs); err != nil {
+			return true
+		}
+		return false
+	})
+	return err
+}
+
+// BeforeRun call user hook
+func (l *LocalWorker) BeforeRun() (err error) {
+	l.pool.Walk(func(v vm.VM) bool {
+		if err = v.BeforeRun(); err != nil {
 			return true
 		}
 		return false
@@ -104,6 +112,17 @@ func (l *LocalWorker) Do() error {
 	go l.runCollector()
 
 	return nil
+}
+
+// AfterRun call user hook
+func (l *LocalWorker) AfterRun() (err error) {
+	l.pool.Walk(func(v vm.VM) bool {
+		if err = v.AfterRun(); err != nil {
+			return true
+		}
+		return false
+	})
+	return err
 }
 
 func (l *LocalWorker) runCollector() {

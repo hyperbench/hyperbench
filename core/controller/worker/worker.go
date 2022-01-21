@@ -16,8 +16,14 @@ type Worker interface {
 	// SetContext set the context of worker passed from Master.
 	SetContext([]byte) error
 
+	// BeforeRun call user hook
+	BeforeRun() error
+
 	// Do call the workers to running.
 	Do() error
+
+	// AfterRun call user hook
+	AfterRun() error
 
 	// CheckoutCollector checkout collector.
 	CheckoutCollector() (collector.Collector, bool, error)

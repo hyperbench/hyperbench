@@ -203,6 +203,23 @@ func (s *Server) Start() error {
 		c.String(http.StatusOK, "ok")
 	})
 
+	r.POST(network.BeforeRunPath, func(c *gin.Context) {
+		if !s.checkNonce(c) {
+			s.logger.Error("busy")
+			c.String(http.StatusUnauthorized, "busy")
+			return
+		}
+		if s.workerHandle == nil {
+			s.logger.Error("worker is not exist")
+			c.String(http.StatusUnauthorized, "worker is not exist")
+			return
+		}
+		// nolint
+		go s.workerHandle.BeforeRun()
+
+		c.String(http.StatusOK, "ok")
+	})
+
 	r.POST(network.DoPath, func(c *gin.Context) {
 		if !s.checkNonce(c) {
 			s.logger.Error("busy")
@@ -216,6 +233,23 @@ func (s *Server) Start() error {
 		}
 		// nolint
 		go s.workerHandle.Do()
+
+		c.String(http.StatusOK, "ok")
+	})
+
+	r.POST(network.AfterRunPath, func(c *gin.Context) {
+		if !s.checkNonce(c) {
+			s.logger.Error("busy")
+			c.String(http.StatusUnauthorized, "busy")
+			return
+		}
+		if s.workerHandle == nil {
+			s.logger.Error("worker is not exist")
+			c.String(http.StatusUnauthorized, "worker is not exist")
+			return
+		}
+		// nolint
+		go s.workerHandle.AfterRun()
 
 		c.String(http.StatusOK, "ok")
 	})

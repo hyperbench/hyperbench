@@ -102,9 +102,11 @@ func TestDo(t *testing.T) {
 	cli := client.NewClient(4, "localhost:8080")
 
 	cli.TestsetNonce()
-	err := cli.Do()
+	err := cli.BeforeRun()
 	assert.Error(t, err)
 	err = cli.Do()
+	assert.Error(t, err)
+	err = cli.AfterRun()
 	assert.Error(t, err)
 
 }
