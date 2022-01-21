@@ -23,6 +23,9 @@ DIRS=benchmark
 GET=github.com/gobuffalo/packr/v2/... github.com/gobuffalo/packr/v2/packr2
 FAILPOINT=github.com/pingcap/failpoint/failpoint-ctl
 
+# export gomodule
+export GO111MODULE=on
+
 all: build
 
 ## build: build the binary with pre-packed static resource

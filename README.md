@@ -14,14 +14,13 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 
 ## Quick Start
 
-### Build from Source Code
+### Build Hyperbench from Source Code
 
 ```bash
 # clone Hyperbench repository into the $GOPATH/src/github.com/meshplus/hyperbench directory:
+mkdir $GOPATH/src/github.com/meshplus && cd $GOPATH/src/github.com/meshplus
 git clone git@github.com:meshplus/hyperbench.git
-
-# enable go modules: https://github.com/golang/go/wiki/Modules
-export GO111MODULE=on
+cd hyperbench
 
 # build main program
 make build
@@ -30,43 +29,57 @@ make build
 cp hyperbench $GOPATH/bin
 ```
 
-### Run HyperBench
-
-Before start stess test, prepare a blockchain network(support Flato, Hyperchain, Fabric),  the gosdk and config file which are used to connect the network.
-
-For example, run `local` benchmark in benchmark directory, send tx to hyperchain network for stress test. Actually, you can create new benchmark for you Application scenario, write Lua script and configure the config file.
-
-1. init hyperbench work directory
+### Build plugins from Source Code
 
 ```bash
-# create empty directory test
-mkdir test & cd test
+# clone Hyperbench-plugins into the $GOPATH/src/github.com/meshplus/hyperbench-plugins directory:
+cd $GOPATH/src/github.com/meshplus
+git clone git@github.com:meshplus/hyperbench-plugins.git
 
-# init hyperbench work directory
-hyperbench init
-
-# show example test case in benchmark
-ls benchmark
-
+# build hyperchain for example
+cd hyperbench-plugins/hyperchain
+make build
+cp hyperchain.so ../../hyperbench/hyperchain.so
 ```
 
-2. set hpc.toml which is prepared to connnect hyperchain network with gosdk in local/hyperchain directory.
+### Run HyperBench for Hyperchain
 
-now, loca directory's structure is:
+Before start stess test, docker and docker-compose are needed to be installed before preparing a hyperchian network.
+1. start hyperchain network
 
 ```bash
-local
-|_hyperchain   # set config file which is used to connect hyperchain
-| |_hpc.toml   # hyperchain's gosdk will use the config file to connect hyperchain
-|_script.lua   # lua script, execute transfer tx
-|_config.toml  # the config file of hyperbench
+# start hyperchain network
+cd $GOPATH/src/github.com/meshplus/hyperbench/benchmark/hyperchain
+bash control.sh start
 ```
 
-3. start stress test.
+2. start stress test.
 
 ```bash
-# use benchmark/local as test case, star benchmark test
-hyperbench start benchmark/local
+# use benchmark/hyperchain/local as test case, star benchmark test
+cd $GOPATH/src/github.com/meshplus/hyperbench
+hyperbench start benchmark/hyperchain/local
+```
+
+### Run HyperBench for Fabric
+
+Before start stess test, docker and docker-compose are needed to be installed before preparing a fabric network.
+1. start fabric network
+
+```bash
+# start hyperchain network
+cd $GOPATH/src/github.com/meshplus/hyperbench/benchmark/fabric/example/fabric
+bash deamon.sh
+# if it's the first time for you to pull the docker images, please be patient
+# and if a timeout bug occurs, please try again
+```
+
+2. start stress test.
+
+```bash
+# use benchmark/fabric/example as test case, star benchmark test
+cd $GOPATH/src/github.com/meshplus/hyperbench
+hyperbench start benchmark/fabric/example
 ```
 
 ## Contribution
