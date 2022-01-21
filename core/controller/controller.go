@@ -24,7 +24,7 @@ type Controller interface {
 	Run() error
 }
 
-type WorkerClient struct {
+type workerClient struct {
 	worker   worker.Worker
 	finished bool // check worker finied work
 }
@@ -32,7 +32,7 @@ type WorkerClient struct {
 // ControllerImpl is the implement of Controller
 type ControllerImpl struct {
 	master        master.Master
-	workerClients []*WorkerClient
+	workerClients []*workerClient
 	recorder      recorder.Recorder
 	reportChan    chan fcom.Report
 	curCollector  collector.Collector
@@ -54,9 +54,9 @@ func NewController() (Controller, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can not create workers")
 	}
-	var workerClients []*WorkerClient
+	var workerClients []*workerClient
 	for i := 0; i < len(ws); i++ {
-		workerClients = append(workerClients, &WorkerClient{
+		workerClients = append(workerClients, &workerClient{
 			ws[i],
 			false,
 		})
@@ -237,7 +237,7 @@ func (l *ControllerImpl) report() {
 	l.curCollector.Reset()
 }
 
-func (l *ControllerImpl) getWorkerResponse(w *WorkerClient, batchWg *sync.WaitGroup, finishWg *sync.WaitGroup, output chan collector.Collector) {
+func (l *ControllerImpl) getWorkerResponse(w *workerClient, batchWg *sync.WaitGroup, finishWg *sync.WaitGroup, output chan collector.Collector) {
 	if w.finished {
 		batchWg.Done()
 		return

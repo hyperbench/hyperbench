@@ -6,15 +6,16 @@ import (
 	"plugin"
 	"reflect"
 
-	"github.com/op/go-logging"
 	"github.com/meshplus/hyperbench-common/base"
 	fcom "github.com/meshplus/hyperbench-common/common"
+	"github.com/op/go-logging"
 	"github.com/spf13/viper"
 )
 
 var plugins *plugin.Plugin
 var log *logging.Logger
 
+// InitPlugin initiate plugin file before init master and worker
 func InitPlugin() {
 	log = fcom.GetLogger("blockchain")
 	filePath := viper.GetString(fcom.ClientPluginPath)

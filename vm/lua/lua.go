@@ -372,7 +372,7 @@
 //  This Source Code Form is "Incompatible With Secondary Licenses", as
 //  defined by the Mozilla Public License, v. 2.0.
 
-// lua implement of vm.VM
+// Package lua implement of vm.VM
 package lua
 
 import (
@@ -401,6 +401,7 @@ type VM struct {
 	index *idex.Index
 }
 
+// Type return the type of vm
 func (v *VM) Type() string {
 	return "lua"
 }
