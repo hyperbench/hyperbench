@@ -67,7 +67,7 @@ Before start stess test, docker and docker-compose are needed to be installed be
 1. start fabric network
 
 ```bash
-# start hyperchain network
+# start fabric network
 cd $GOPATH/src/github.com/meshplus/hyperbench/benchmark/fabric/example/fabric
 bash deamon.sh
 # if it's the first time for you to pull the docker images, please be patient
