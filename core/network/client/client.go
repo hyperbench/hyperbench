@@ -163,6 +163,47 @@ func (c *Client) Do() error {
 	return c.callWithValues("do", network.DoPath, url.Values{"nonce": {c.nonce}})
 }
 
+// Statistic get the number of sent and missed transactions
+func (c *Client) Statistics() (int64, int64) {
+	var resp *http.Response
+	values := url.Values{"nonce": {c.nonce}}
+	resp, err := http.PostForm(c.url+network.StatisticsPath, values)
+	if err != nil {
+		c.logger.Error(err)
+		return 0, 0
+	}
+	// nolint
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = errors.New(resp.Status)
+		c.logger.Error(err)
+		return 0, 0
+	}
+
+	var bs []byte
+	bs, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.err = err
+		c.logger.Error(err)
+		return 0, 0
+	}
+
+	var retJSON map[string]interface{}
+	err = json.Unmarshal(bs, &retJSON)
+	if err != nil {
+		c.err = err
+		c.logger.Error(err)
+		return 0, 0
+	}
+
+	sent, _ := retJSON["sent"].(string)
+	missed, _ := retJSON["missed"].(string)
+	Sent, _ := strconv.ParseInt(sent, 10, 64)
+	Missed, _ := strconv.ParseInt(missed, 10, 64)
+	return Sent, Missed
+}
+
 // AfterRun call user hook
 func (c *Client) AfterRun() error {
 	defer c.teardownWhileErr()

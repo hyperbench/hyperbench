@@ -34,6 +34,9 @@ func TestLocalWorker(t *testing.T) {
 
 	err = localWorker.AfterRun()
 	assert.NoError(t, err)
+	sent, missed := localWorker.Statistics()
+	assert.NotNil(t, sent)
+	assert.NotNil(t, missed)
 
 	col, b, _ := localWorker.CheckoutCollector()
 	assert.NotNil(t, col)

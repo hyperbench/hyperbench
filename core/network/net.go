@@ -18,6 +18,8 @@ const (
 	BeforeRunPath = "/before-run"
 	// DoPath do path.
 	DoPath = "/do"
+	// StatisticsPath Statistics path.
+	StatisticsPath = "/statistics"
 	// AfterRunPath after run path.
 	AfterRunPath = "/after-run"
 	// TeardownPath teardown path.

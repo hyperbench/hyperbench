@@ -51,6 +51,10 @@ func TestClient(t *testing.T) {
 	err = cli.AfterRun()
 	assert.NoError(t, err)
 
+	sent, missed := cli.Statistics()
+	assert.NotNil(t, sent)
+	assert.NotNil(t, missed)
+
 	cli.Teardown()
 
 	time.Sleep(time.Second * 2)

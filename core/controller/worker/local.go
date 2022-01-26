@@ -67,6 +67,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	idx := fcom.TxIndex{
 		EngineIdx: config.Index,
 		TxIdx:     -1,
+		MissIdx:   0,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	localWorker.conf = config
@@ -125,6 +126,11 @@ func (l *LocalWorker) AfterRun() (err error) {
 	return err
 }
 
+// Statistic get the number of sent and missed transactions
+func (l *LocalWorker) Statistics() (int64, int64) {
+	return l.idx.TxIdx + 1, l.idx.MissIdx
+}
+
 func (l *LocalWorker) runCollector() {
 
 	defer func() {
@@ -168,6 +174,7 @@ func (l *LocalWorker) asyncJob() {
 		l.wg.Done()
 	}()
 	if v == nil {
+		atomic.AddInt64(&l.idx.MissIdx, 1)
 		// if worker can not get vm from pool, just shortcut
 		return
 	}

@@ -237,6 +237,29 @@ func (s *Server) Start() error {
 		c.String(http.StatusOK, "ok")
 	})
 
+	r.POST(network.StatisticsPath, func(c *gin.Context) {
+		if !s.checkNonce(c) {
+			s.logger.Error("busy")
+			c.String(http.StatusUnauthorized, "busy")
+			return
+		}
+		if s.workerHandle == nil {
+			s.logger.Error("worker is not exist")
+			c.String(http.StatusUnauthorized, "worker is not exist")
+			return
+		}
+
+		sent, missed := s.workerHandle.Statistics()
+		Sent := strconv.FormatInt(sent, 10)
+		Missed := strconv.FormatInt(missed, 10)
+		dm := map[string]interface{}{
+			"sent":   Sent,
+			"missed": Missed,
+		}
+
+		c.JSON(http.StatusOK, dm)
+	})
+
 	r.POST(network.AfterRunPath, func(c *gin.Context) {
 		if !s.checkNonce(c) {
 			s.logger.Error("busy")
