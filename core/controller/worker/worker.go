@@ -28,6 +28,9 @@ type Worker interface {
 	// CheckoutCollector checkout collector.
 	CheckoutCollector() (collector.Collector, bool, error)
 
+	// Statistic get the number of sent and missed transactions
+	Statistics() (int64, int64)
+
 	// Teardown close the worker manually.
 	Teardown()
 }

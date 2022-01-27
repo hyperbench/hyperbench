@@ -17,6 +17,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
+	defer os.RemoveAll("./benchmark")
 	os.MkdirAll("./benchmark/111", 0755)
 	ioutil.WriteFile("./benchmark/111/a.toml", []byte(""), 0644)
 	viper.Set(fcom.BenchmarkArchivePath, "benchmark/111")
@@ -108,6 +109,9 @@ func TestDo(t *testing.T) {
 	assert.Error(t, err)
 	err = cli.AfterRun()
 	assert.Error(t, err)
+	sent, missed := cli.Statistics()
+	assert.NotNil(t, sent)
+	assert.NotNil(t, missed)
 
 }
 

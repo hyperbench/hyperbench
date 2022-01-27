@@ -13,7 +13,7 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.12
-	github.com/meshplus/hyperbench-common v0.0.0-20220118061046-70e2ed2944de
+	github.com/meshplus/hyperbench-common v0.0.0-20220127111013-538d001f759d
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.4.3
@@ -32,7 +32,7 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20190206043414-8bfc7677f583
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	golang.org/x/tools v0.1.8 // indirect
+	golang.org/x/tools v0.1.9 // indirect
 	gonum.org/v1/gonum v0.6.0 // indirect
 	layeh.com/gopher-luar v1.0.8-0.20190807124245-b07e371a3bb0
 )

@@ -79,24 +79,16 @@ func (b *baseEngine) Run(callback Callback) {
 }
 
 func (b *baseEngine) schedule(callback Callback) {
-	b.timeoutCtx, b.cancelFunc = context.WithTimeout(context.Background(), b.Duration)
+	totalBatch, batchCount := int(b.Duration/b.interval), 0
 	tick := time.NewTicker(b.interval)
 	defer func() {
 		tick.Stop()
 	}()
-
-	var timeout = b.timeoutCtx
-	var i int64
-
-	for {
-		select {
-		case <-timeout.Done():
-			return
-		case <-tick.C:
-			for i = 0; i < b.batch; i++ {
-				b.Wg.Add(1)
-				go callback()
-			}
+	for ; batchCount < totalBatch; batchCount++ {
+		<-tick.C
+		for i := int64(0); i < b.batch; i++ {
+			b.Wg.Add(1)
+			go callback()
 		}
 	}
 }
