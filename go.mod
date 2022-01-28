@@ -13,7 +13,7 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.12
-	github.com/meshplus/hyperbench-common v0.0.0-20220127111013-538d001f759d
+	github.com/meshplus/hyperbench-common v0.0.0-20220128060413-2f16193421b0
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.4.3

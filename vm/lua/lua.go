@@ -396,7 +396,7 @@ type VM struct {
 	vm       *lua.LState
 	instance *lua.LTable
 	meta     *lua.LTable
-	client   blockchain.Blockchain
+	client   fcom.Blockchain
 
 	index *idex.Index
 }
