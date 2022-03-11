@@ -39,4 +39,6 @@ require (
 
 replace layeh.com/gopher-luar => github.com/layeh/gopher-luar v1.0.8-0.20190807124245-b07e371a3bb0
 
+replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220310020820-b874c991c1a5
+
 go 1.15
