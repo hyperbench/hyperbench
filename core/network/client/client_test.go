@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/hyperbench/core/network/client"
-	"github.com/meshplus/hyperbench/core/network/server"
+	"github.com/hyperbench/hyperbench/core/network/client"
+	"github.com/hyperbench/hyperbench/core/network/server"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/core/network/client"
+	"github.com/hyperbench/hyperbench/core/network/client"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

@@ -6,13 +6,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/core/collector"
-	"github.com/meshplus/hyperbench/core/engine"
-	"github.com/meshplus/hyperbench/core/vmpool"
-	"github.com/meshplus/hyperbench/plugins/blockchain"
-	"github.com/meshplus/hyperbench/vm"
+	"github.com/hyperbench/hyperbench/core/collector"
+	"github.com/hyperbench/hyperbench/core/engine"
+	"github.com/hyperbench/hyperbench/core/vmpool"
+	"github.com/hyperbench/hyperbench/plugins/blockchain"
+	"github.com/hyperbench/hyperbench/vm"
 )
 
 // LocalWorker is the local Worker implement

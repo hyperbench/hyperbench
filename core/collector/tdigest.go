@@ -6,8 +6,8 @@ import (
 
 	json "github.com/json-iterator/go"
 
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/influxdata/tdigest"
-	fcom "github.com/meshplus/hyperbench-common/common"
 )
 
 const (

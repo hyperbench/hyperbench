@@ -6,7 +6,7 @@ client:
     logging:
         level: info
     cryptoconfig:
-        path: ${GOPATH}/src/github.com/meshplus/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config
+        path: ${GOPATH}/src/github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config
     credentialStore:
         # [Optional]. Used by user store. Not needed if all credentials are embedded in configuration
         # and enrollments are performed elswhere.
@@ -38,9 +38,9 @@ client:
             # [Optional]. Client key and cert for TLS handshake with peers and orderers
             client:
                 key:
-                    path: ${GOPATH}/src/github.com/meshplus/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/server.key
+                    path: ${GOPATH}/src/github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/server.key
                 cert:
-                    path: ${GOPATH}/src/github.com/meshplus/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/server.crt
+                    path: ${GOPATH}/src/github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/server.crt
 
 channels:
     mychannel:
@@ -76,14 +76,14 @@ peers:
 
             tlsCACerts:
                 # Certificate location absolute path
-                path: ${GOPATH}/src/github.com/meshplus/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+                path: ${GOPATH}/src/github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
 certificateAuthorities:
     ca.example.com:
         url: http://localhost:7054
         tlsCACerts:
             #   # Comma-Separated list of paths
-            path: ${GOPATH}/src/github.com/meshplus/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+            path: ${GOPATH}/src/github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/fabric/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
             #   # Client key and cert for SSL handshake with Fabric CA
             #   client:
             #     key:

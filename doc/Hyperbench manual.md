@@ -792,13 +792,13 @@ hyperbench worker -p 8081
 worker启动后可以看到如下命令行提示：
 
 ```text
-[GIN-debug] POST   /set-nonce                --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func1 (3 handlers)
-[GIN-debug] POST   /upload                   --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func2 (3 handlers)
-[GIN-debug] POST   /init                     --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func3 (3 handlers)
-[GIN-debug] POST   /set-context              --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func4 (3 handlers)
-[GIN-debug] POST   /do                       --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func5 (3 handlers)
-[GIN-debug] POST   /checkout-collector       --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func6 (3 handlers)
-[GIN-debug] POST   /teardown                 --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func7 (3 handlers)
+[GIN-debug] POST   /set-nonce                --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func1 (3 handlers)
+[GIN-debug] POST   /upload                   --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func2 (3 handlers)
+[GIN-debug] POST   /init                     --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func3 (3 handlers)
+[GIN-debug] POST   /set-context              --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func4 (3 handlers)
+[GIN-debug] POST   /do                       --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func5 (3 handlers)
+[GIN-debug] POST   /checkout-collector       --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func6 (3 handlers)
+[GIN-debug] POST   /teardown                 --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func7 (3 handlers)
 [GIN-debug] Listening and serving HTTP on :8081
 ```
 
@@ -863,13 +863,13 @@ hyperbench worker -p 8081
 看到以下命令行，则表示worker启动完成。
 
 ```text
-[GIN-debug] POST   /set-nonce                --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func1 (3 handlers)
-[GIN-debug] POST   /upload                   --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func2 (3 handlers)
-[GIN-debug] POST   /init                     --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func3 (3 handlers)
-[GIN-debug] POST   /set-context              --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func4 (3 handlers)
-[GIN-debug] POST   /do                       --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func5 (3 handlers)
-[GIN-debug] POST   /checkout-collector       --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func6 (3 handlers)
-[GIN-debug] POST   /teardown                 --> github.com/meshplus/hyperbench/core/network/server.(*Server).Start.func7 (3 handlers)
+[GIN-debug] POST   /set-nonce                --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func1 (3 handlers)
+[GIN-debug] POST   /upload                   --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func2 (3 handlers)
+[GIN-debug] POST   /init                     --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func3 (3 handlers)
+[GIN-debug] POST   /set-context              --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func4 (3 handlers)
+[GIN-debug] POST   /do                       --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func5 (3 handlers)
+[GIN-debug] POST   /checkout-collector       --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func6 (3 handlers)
+[GIN-debug] POST   /teardown                 --> github.com/hyperbench/hyperbench/core/network/server.(*Server).Start.func7 (3 handlers)
 [GIN-debug] Listening and serving HTTP on :8081
 ```
 

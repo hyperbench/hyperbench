@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/meshplus/hyperbench/core/network/server"
+	"github.com/hyperbench/hyperbench/core/network/server"
 
 	"github.com/op/go-logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/viper"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/core/controller"
-	"github.com/meshplus/hyperbench/filesystem"
+	"github.com/hyperbench/hyperbench/core/controller"
+	"github.com/hyperbench/hyperbench/filesystem"
 )
 
 var (

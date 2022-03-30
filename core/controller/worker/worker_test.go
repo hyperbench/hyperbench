@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/meshplus/hyperbench/vm"
+	"github.com/hyperbench/hyperbench/vm"
 	"github.com/spf13/viper"
 
 	"github.com/stretchr/testify/assert"

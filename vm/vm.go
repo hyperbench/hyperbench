@@ -1,10 +1,10 @@
 package vm
 
 import (
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/vm/base"
-	"github.com/meshplus/hyperbench/vm/lua"
+	"github.com/hyperbench/hyperbench/vm/base"
+	"github.com/hyperbench/hyperbench/vm/lua"
 )
 
 // Type is the ext name of script file

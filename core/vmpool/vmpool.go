@@ -1,13 +1,13 @@
 package vmpool
 
 import (
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"path"
 	"strings"
 
-	"github.com/meshplus/hyperbench/vm"
-	"github.com/meshplus/hyperbench/vm/base"
+	"github.com/hyperbench/hyperbench/vm"
+	"github.com/hyperbench/hyperbench/vm/base"
 	"github.com/spf13/viper"
 )
 

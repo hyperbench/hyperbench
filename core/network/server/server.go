@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"net/http"
 	"os"
@@ -11,8 +11,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/meshplus/hyperbench/core/controller/worker"
-	"github.com/meshplus/hyperbench/core/network"
+	"github.com/hyperbench/hyperbench/core/controller/worker"
+	"github.com/hyperbench/hyperbench/core/network"
 	"github.com/mholt/archiver/v3"
 	"github.com/op/go-logging"
 	"github.com/spf13/cast"

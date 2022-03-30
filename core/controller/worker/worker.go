@@ -1,11 +1,11 @@
 package worker
 
 import (
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"os"
 
-	"github.com/meshplus/hyperbench/core/collector"
+	"github.com/hyperbench/hyperbench/core/collector"
 	"github.com/mholt/archiver/v3"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	json "github.com/json-iterator/go"
-	fcom "github.com/meshplus/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/core/collector"
-	"github.com/meshplus/hyperbench/core/network"
+	"github.com/hyperbench/hyperbench/core/collector"
+	"github.com/hyperbench/hyperbench/core/network"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

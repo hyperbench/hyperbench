@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/gobuffalo/packr/v2"
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"os"
 	"path/filepath"
