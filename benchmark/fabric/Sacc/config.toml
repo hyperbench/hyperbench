@@ -7,7 +7,7 @@ cap = 50                                     # 客户端虚拟机数量
 script = "benchmark/fabric/Sacc/script.lua"  # 脚本
 type = "fabric"                             # 区块链类型
 config = "benchmark/fabric/Sacc/fabric"      # 区块链SDK配置路径
-contract = "github.com/meshplus/hyperbench/benchmark/fabric/Sacc/contract"   # 合约目录路径
+contract = "github.com/hyperbench/hyperbench/benchmark/fabric/Sacc/contract"   # 合约目录路径
 args = ["A", "123"]                         # 合约参数路径
 plugin = "./fabric.so"                      # 插件路径
 

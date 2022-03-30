@@ -4,11 +4,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/plugins/blockchain"
-	"github.com/meshplus/hyperbench/vm"
-	"github.com/meshplus/hyperbench/vm/base"
+	"github.com/hyperbench/hyperbench/plugins/blockchain"
+	"github.com/hyperbench/hyperbench/vm"
+	"github.com/hyperbench/hyperbench/vm/base"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )

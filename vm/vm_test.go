@@ -3,7 +3,7 @@ package vm
 import (
 	"testing"
 
-	"github.com/meshplus/hyperbench/vm/base"
+	"github.com/hyperbench/hyperbench/vm/base"
 	"github.com/stretchr/testify/assert"
 )
 

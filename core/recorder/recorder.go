@@ -6,9 +6,9 @@ import (
 	"path"
 	"time"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
-	"github.com/meshplus/hyperbench/core/utils"
+	"github.com/hyperbench/hyperbench/core/utils"
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
 )

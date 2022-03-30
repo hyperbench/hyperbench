@@ -21,28 +21,28 @@ func TestEnsureFileExistErr(t *testing.T) {
 	testContent := []byte("TestEnsureFileExist")
 
 	{
-		err = failpoint.Enable("github.com/meshplus/hyperbench/filesystem/openfile-err", "return")
+		err = failpoint.Enable("github.com/hyperbench/hyperbench/filesystem/openfile-err", "return")
 		assert.NoError(t, err)
 		_, err = EnsureFileExist(fp, testContent)
 		assert.Error(t, err)
-		err = failpoint.Disable("github.com/meshplus/hyperbench/filesystem/openfile-err")
+		err = failpoint.Disable("github.com/hyperbench/hyperbench/filesystem/openfile-err")
 		assert.NoError(t, err)
 		_ = os.RemoveAll(fp)
 	}
 
 	{
-		_ = failpoint.Enable("github.com/meshplus/hyperbench/filesystem/writefile-err", "return")
+		_ = failpoint.Enable("github.com/hyperbench/hyperbench/filesystem/writefile-err", "return")
 		_, err = EnsureFileExist(fp, testContent)
 		assert.Error(t, err)
-		_ = failpoint.Disable("github.com/meshplus/hyperbench/filesystem/writefile-err")
+		_ = failpoint.Disable("github.com/hyperbench/hyperbench/filesystem/writefile-err")
 		_ = os.RemoveAll(fp)
 	}
 
 	{
-		_ = failpoint.Enable("github.com/meshplus/hyperbench/filesystem/closefile-err", "return")
+		_ = failpoint.Enable("github.com/hyperbench/hyperbench/filesystem/closefile-err", "return")
 		_, err = EnsureFileExist(fp, testContent)
 		assert.Error(t, err)
-		_ = failpoint.Disable("github.com/meshplus/hyperbench/filesystem/closefile-err")
+		_ = failpoint.Disable("github.com/hyperbench/hyperbench/filesystem/closefile-err")
 		_ = os.RemoveAll(fp)
 	}
 }
@@ -83,10 +83,10 @@ func TestEnsureFileExist(t *testing.T) {
 func TestUnpackErr(t *testing.T) {
 	var err error
 
-	_ = failpoint.Enable("github.com/meshplus/hyperbench/filesystem/unpack-err", "return")
+	_ = failpoint.Enable("github.com/hyperbench/hyperbench/filesystem/unpack-err", "return")
 	err = Unpack("111")
 	assert.NoError(t, err)
-	_ = failpoint.Disable("github.com/meshplus/hyperbench/filesystem/unpack-err")
+	_ = failpoint.Disable("github.com/hyperbench/hyperbench/filesystem/unpack-err")
 }
 
 func TestUnpack(t *testing.T) {
@@ -155,10 +155,10 @@ func TestWalkErr(t *testing.T) {
 	f, err = file.NewFile(name, content)
 	assert.NoError(t, err)
 
-	_ = failpoint.Enable("github.com/meshplus/hyperbench/filesystem/walk-buf-err", "return")
+	_ = failpoint.Enable("github.com/hyperbench/hyperbench/filesystem/walk-buf-err", "return")
 	err = walk(name, f)
 	assert.Error(t, err)
-	_ = failpoint.Disable("github.com/meshplus/hyperbench/filesystem/walk-buf-err")
+	_ = failpoint.Disable("github.com/hyperbench/hyperbench/filesystem/walk-buf-err")
 }
 
 func TestWalk(t *testing.T) {

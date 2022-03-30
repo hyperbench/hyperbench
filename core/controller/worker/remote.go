@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"github.com/meshplus/hyperbench/core/network/client"
+	"github.com/hyperbench/hyperbench/core/network/client"
 )
 
 // RemoteWorker is the agent of remote worker.

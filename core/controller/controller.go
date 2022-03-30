@@ -3,16 +3,16 @@ package controller
 import (
 	"context"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/spf13/viper"
 
 	"sync"
 	"time"
 
-	"github.com/meshplus/hyperbench/core/collector"
-	"github.com/meshplus/hyperbench/core/controller/master"
-	"github.com/meshplus/hyperbench/core/controller/worker"
-	"github.com/meshplus/hyperbench/core/recorder"
+	"github.com/hyperbench/hyperbench/core/collector"
+	"github.com/hyperbench/hyperbench/core/controller/master"
+	"github.com/hyperbench/hyperbench/core/controller/worker"
+	"github.com/hyperbench/hyperbench/core/recorder"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 )

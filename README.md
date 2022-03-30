@@ -17,8 +17,8 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 ### Build Hyperbench from Source Code
 
 ```bash
-# clone Hyperbench repository into the $GOPATH/src/github.com/meshplus/hyperbench directory:
-mkdir $GOPATH/src/github.com/meshplus && cd $GOPATH/src/github.com/meshplus
+# clone Hyperbench repository into the $GOPATH/src/github.com/hyperbench/hyperbench directory:
+mkdir $GOPATH/src/github.com/hyperbench && cd $GOPATH/src/github.com/hyperbench
 git clone git@github.com:meshplus/hyperbench.git
 cd hyperbench
 
@@ -32,8 +32,8 @@ cp hyperbench $GOPATH/bin
 ### Build plugins from Source Code
 
 ```bash
-# clone Hyperbench-plugins into the $GOPATH/src/github.com/meshplus/hyperbench-plugins directory:
-cd $GOPATH/src/github.com/meshplus
+# clone Hyperbench-plugins into the $GOPATH/src/github.com/hyperbench/hyperbench-plugins directory:
+cd $GOPATH/src/github.com/hyperbench
 git clone git@github.com:meshplus/hyperbench-plugins.git
 
 # build hyperchain for example
@@ -49,7 +49,7 @@ Before start stess test, docker and docker-compose are needed to be installed be
 
 ```bash
 # start hyperchain network
-cd $GOPATH/src/github.com/meshplus/hyperbench/benchmark/hyperchain
+cd $GOPATH/src/github.com/hyperbench/hyperbench/benchmark/hyperchain
 bash control.sh start
 ```
 
@@ -57,7 +57,7 @@ bash control.sh start
 
 ```bash
 # use benchmark/hyperchain/local as test case, star benchmark test
-cd $GOPATH/src/github.com/meshplus/hyperbench
+cd $GOPATH/src/github.com/hyperbench/hyperbench
 hyperbench start benchmark/hyperchain/local
 ```
 
@@ -68,7 +68,7 @@ Before start stess test, docker and docker-compose are needed to be installed be
 
 ```bash
 # start fabric network
-cd $GOPATH/src/github.com/meshplus/hyperbench/benchmark/fabric/example/fabric
+cd $GOPATH/src/github.com/hyperbench/hyperbench/benchmark/fabric/example/fabric
 bash deamon.sh
 # if it's the first time for you to pull the docker images, please be patient
 # and if a timeout bug occurs, please try again
@@ -78,7 +78,7 @@ bash deamon.sh
 
 ```bash
 # use benchmark/fabric/example as test case, star benchmark test
-cd $GOPATH/src/github.com/meshplus/hyperbench
+cd $GOPATH/src/github.com/hyperbench/hyperbench
 hyperbench start benchmark/fabric/example
 ```
 

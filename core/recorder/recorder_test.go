@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

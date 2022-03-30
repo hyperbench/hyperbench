@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-ORG_DIR="$GOPATH/src/github.com/meshplus/"
+ORG_DIR="$GOPATH/src/github.com/hyperbench/"
 PROJECT_NAME="hyperbench"
 PROJECT_DIR="$ORG_DIR/$PROJECT_NAME/"
 

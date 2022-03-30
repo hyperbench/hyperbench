@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	fcom "github.com/meshplus/hyperbench-common/common"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"

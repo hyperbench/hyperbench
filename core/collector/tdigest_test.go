@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/influxdata/tdigest"
-	fcom "github.com/meshplus/hyperbench-common/common"
 
 	"github.com/stretchr/testify/assert"
 )

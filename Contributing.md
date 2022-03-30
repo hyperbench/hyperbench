@@ -26,7 +26,7 @@ make test
 
 **1. fork**
 
-visit https://github.com/meshplus/hyperbench, click `fork` button
+visit https://github.com/hyperbench/hyperbench, click `fork` button
 
 **2. clone**
 
@@ -35,7 +35,7 @@ We assume that you have `go` v1.13 installed, and `GOPATH` is set.
 Create your clone:
 
 ```Shell
-git clone git@github.com:$user/hyperbench.git $GOPATH/src/github.com/meshplus/hyperbench
+git clone git@github.com:$user/hyperbench.git $GOPATH/src/github.com/hyperbench/hyperbench
 ```
 
 **3. fetch && rebase**
@@ -43,7 +43,7 @@ git clone git@github.com:$user/hyperbench.git $GOPATH/src/github.com/meshplus/hy
 Get your local master up to date:
 
 ```Shell
-cd $GOPATH/src/github.com/meshplus/hyperbench
+cd $GOPATH/src/github.com/hyperbench/hyperbench
 git fetch upstream
 git checkout master
 git rebase upstream/master
