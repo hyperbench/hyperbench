@@ -1,7 +1,7 @@
 {
-  "name": "frigate",
-  "version": "1.0.2",
-  "description": "frigate is the performance test tool for hyperchain",
+  "name": "hyperbench",
+  "version": "1.0.0",
+  "description": "hyperbench is the performance test tool for hyperchain",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
