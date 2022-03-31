@@ -19,7 +19,7 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 ```bash
 # clone Hyperbench repository into the $GOPATH/src/github.com/hyperbench/hyperbench directory:
 mkdir $GOPATH/src/github.com/hyperbench && cd $GOPATH/src/github.com/hyperbench
-git clone git@github.com:meshplus/hyperbench.git
+git clone git@github.com:hyperbench/hyperbench.git
 cd hyperbench
 
 # build main program
@@ -34,7 +34,7 @@ cp hyperbench $GOPATH/bin
 ```bash
 # clone Hyperbench-plugins into the $GOPATH/src/github.com/hyperbench/hyperbench-plugins directory:
 cd $GOPATH/src/github.com/hyperbench
-git clone git@github.com:meshplus/hyperbench-plugins.git
+git clone git@github.com:hyperbench/hyperbench-plugins.git
 
 # build hyperchain for example
 cd hyperbench-plugins/hyperchain

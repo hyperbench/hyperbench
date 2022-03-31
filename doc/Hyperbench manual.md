@@ -86,7 +86,7 @@ brew install go
 
 ```text
 cd $GOPATH/src
-git clone git@github.com:meshplus/hyperbench.git
+git clone git@github.com:hyperbench/hyperbench.git
 git checkout master
 
 export GO111MODULE=off 

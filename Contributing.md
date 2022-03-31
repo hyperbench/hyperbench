@@ -7,7 +7,7 @@ This document describes how to contribute to hyperbench project. It is an entry 
 **1. clone**
 
 ```shell
-git clone git@github.com:meshplus/hyperbench.git
+git clone git@github.com:hyperbench/hyperbench.git
 ```
 
 **2. build**
