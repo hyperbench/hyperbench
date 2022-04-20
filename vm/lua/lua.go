@@ -52,12 +52,6 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	// inject test case metatable
 	vm.injectTestcaseBase()
 
-	// append plugins to the test case metatable
-	err = vm.setPlugins(vm.meta)
-	if err != nil {
-		return nil, err
-	}
-
 	// load script
 	err = vm.vm.DoFile(base.Path)
 	if err != nil {

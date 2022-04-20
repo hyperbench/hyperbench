@@ -50,6 +50,8 @@ type LocalWorkerConfig struct {
 	Index    int64
 	Cap      int64
 	Rate     int64
+	Instant  int64
+	Wait     time.Duration
 	Duration time.Duration
 }
 
@@ -68,11 +70,12 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	eg := engine.NewEngine(engine.BaseEngineConfig{
 		Rate:     config.Rate,
 		Duration: config.Duration,
+		Instant:  config.Instant,
 		Wg:       &localWorker.wg,
 	})
 
 	// init vm pool
-	pool, err := vmpool.NewPoolImpl(config.Index, config.Cap)
+	pool, err := vmpool.NewPoolImpl(config.Index, config.Cap, config.Wait)
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 func TestLocalWorker(t *testing.T) {
-	localWorker, err := NewLocalWorker(LocalWorkerConfig{0, 5, 20, time.Second * 5})
+	localWorker, err := NewLocalWorker(LocalWorkerConfig{0, 5, 20, 5, time.Millisecond * 5, time.Second * 5})
 	assert.NoError(t, err)
 	assert.NotNil(t, localWorker)
 
@@ -45,7 +45,7 @@ func TestLocalWorker(t *testing.T) {
 	localWorker.Done()
 	localWorker.Teardown()
 
-	l, _ := NewLocalWorker(LocalWorkerConfig{0, 5, 20, time.Second * 3})
+	l, _ := NewLocalWorker(LocalWorkerConfig{0, 5, 20, 5, time.Millisecond * 5, time.Second * 3})
 	l.Do()
 	l.cancel()
 	time.Sleep(time.Second * 4)

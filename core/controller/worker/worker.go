@@ -73,6 +73,8 @@ func NewWorkers() (workers []Worker, err error) {
 			Index:    0,
 			Cap:      viper.GetInt64(fcom.EngineCapPath),
 			Rate:     viper.GetInt64(fcom.EngineRatePath),
+			Instant:  viper.GetInt64("engine.instant"),
+			Wait:     viper.GetDuration("engine.wait"),
 			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 		if err != nil {

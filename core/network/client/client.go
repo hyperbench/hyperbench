@@ -225,6 +225,8 @@ func (c *Client) upload() error {
 	bodyWriter := multipart.NewWriter(bodyBuffer)
 	nonceWriter, _ := bodyWriter.CreateFormField("nonce")
 	_, _ = nonceWriter.Write([]byte(c.nonce))
+	dirWriter, _ := bodyWriter.CreateFormField("configDir")
+	_, _ = dirWriter.Write([]byte(viper.GetString("__BenchmarkConfigPath__")))
 	fileWriter, _ := bodyWriter.CreateFormFile("file", c.path)
 
 	file, _ := os.Open(c.path)

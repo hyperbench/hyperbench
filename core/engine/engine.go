@@ -47,6 +47,8 @@ type BaseEngineConfig struct {
 	Type string `mapstructure:"type"`
 	// Rate engine call Callback rate.
 	Rate int64 `mapstructure:"rate"`
+	// Instant the number of a batch
+	Instant int64 `mapstructure:"instant"`
 	// Duration engine run duration.
 	Duration time.Duration `mapstructure:"duration"`
 	// Wg Semaphore of localWorker
@@ -56,7 +58,6 @@ type BaseEngineConfig struct {
 type baseEngine struct {
 	BaseEngineConfig
 
-	batch    int64
 	interval time.Duration
 	//wg         sync.WaitGroup
 	timeoutCtx context.Context
@@ -74,16 +75,8 @@ func newBaseEngine(config BaseEngineConfig) *baseEngine {
 }
 
 func (b *baseEngine) adjust() *baseEngine {
-
-	// calculate batch and interval
-	if b.Rate <= 100 {
-		b.batch = 1
-		b.interval = time.Second / time.Duration(b.Rate)
-	} else {
-		b.batch = b.Rate / 10
-		b.interval = time.Second / 10
-	}
-
+	tmp := float64(b.Instant) / float64(b.Rate)
+	b.interval = time.Duration(tmp*1000000000) * time.Nanosecond
 	return b
 }
 
@@ -100,10 +93,12 @@ func (b *baseEngine) schedule(callback Callback) {
 	}()
 	for ; batchCount < totalBatch; batchCount++ {
 		<-tick.C
-		for i := int64(0); i < b.batch; i++ {
-			b.Wg.Add(1)
-			go callback()
-		}
+		b.Wg.Add(int(b.Instant))
+		go func() {
+			for i := int64(0); i < b.Instant; i++ {
+				go callback()
+			}
+		}()
 	}
 }
 

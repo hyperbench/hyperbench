@@ -31,11 +31,12 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20190206043414-8bfc7677f583
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
+	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	gonum.org/v1/gonum v0.6.0 // indirect
 )
 
-replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220209214540-3681064d5158
+replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220330033206-e17cdc41300f
 
 go 1.15
