@@ -49,11 +49,6 @@ type Worker interface {
 	Teardown()
 }
 
-var (
-	// ErrConfig config error.
-	ErrConfig = errors.New("config error")
-)
-
 // NewWorkers generate workers according to config
 func NewWorkers() (workers []Worker, err error) {
 	defer func() {
@@ -73,12 +68,12 @@ func NewWorkers() (workers []Worker, err error) {
 			Index:    0,
 			Cap:      viper.GetInt64(fcom.EngineCapPath),
 			Rate:     viper.GetInt64(fcom.EngineRatePath),
-			Instant:  viper.GetInt64("engine.instant"),
-			Wait:     viper.GetDuration("engine.wait"),
+			Instant:  viper.GetInt64(fcom.EngineInstantPath),
+			Wait:     viper.GetDuration(fcom.EngineWaitPath),
 			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 		if err != nil {
-			return nil, ErrConfig
+			return nil, errors.Wrap(err, "config error")
 		}
 		workers = []Worker{
 			localWorker,

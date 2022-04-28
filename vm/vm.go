@@ -26,9 +26,9 @@ type MasterVM interface {
 	// GetContext generate context for execute tx in vm.
 	GetContext() ([]byte, error)
 	// Statistic statistic remote execute info.
-	Statistic(from, to int64) (*fcom.RemoteStatistic, error)
+	Statistic(from, to *fcom.ChainInfo) (*fcom.RemoteStatistic, error)
 	// LogStatus records blockheight and time
-	LogStatus() (int64, error)
+	LogStatus() (*fcom.ChainInfo, error)
 }
 
 // BaseVM is the part interface of VM that will be called in both master and worker

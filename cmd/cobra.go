@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -101,18 +102,31 @@ func initConfig() {
 }
 
 func initBenchmark(dir string) {
-
-	path := dir[0 : strings.LastIndex(dir, "/")+1]
+	// support for specifying configuration files or specifying test case directories
+	// if use test case directory, it will use file named "config" for configuration file
+	s, err := os.Stat(dir)
+	if err != nil {
+		logger.Critical("can not find test case: %v", err)
+		return
+	}
+	isFile := !s.IsDir()
+	var path string
+	if isFile {
+		viper.SetConfigFile(dir)
+		path = dir[0 : strings.LastIndex(dir, "/")+1]
+		viper.Set(fcom.BenchmarkConfigPath, dir)
+	} else {
+		path = dir
+	}
 	viper.AddConfigPath(path)
-	viper.SetConfigFile(dir)
 
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
 		logger.Critical("can not read in config: %v", err)
 		return
 	}
 	viper.Set(fcom.BenchmarkDirPath, path)
-	viper.Set("__BenchmarkConfigPath__", dir)
+
 	fcom.InitLog()
 }
 

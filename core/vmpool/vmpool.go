@@ -80,9 +80,9 @@ func (p *PoolImpl) Close() {
 // if it's implement in no-block way, it may return nil.
 func (p *PoolImpl) Pop() (worker vm.VM) {
 	timer := time.NewTimer(p.wait)
+	defer timer.Stop()
 	select {
 	case worker = <-p.ch:
-		timer.Stop()
 		return
 	case <-timer.C:
 		return

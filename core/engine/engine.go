@@ -75,8 +75,7 @@ func newBaseEngine(config BaseEngineConfig) *baseEngine {
 }
 
 func (b *baseEngine) adjust() *baseEngine {
-	tmp := float64(b.Instant) / float64(b.Rate)
-	b.interval = time.Duration(tmp*1000000000) * time.Nanosecond
+	b.interval = time.Duration(float64(b.Instant) / float64(b.Rate) * float64(time.Second))
 	return b
 }
 
@@ -94,11 +93,9 @@ func (b *baseEngine) schedule(callback Callback) {
 	for ; batchCount < totalBatch; batchCount++ {
 		<-tick.C
 		b.Wg.Add(int(b.Instant))
-		go func() {
-			for i := int64(0); i < b.Instant; i++ {
-				go callback()
-			}
-		}()
+		for i := int64(0); i < b.Instant; i++ {
+			go callback()
+		}
 	}
 }
 

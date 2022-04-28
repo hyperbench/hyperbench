@@ -42,13 +42,13 @@ func (v *VMBase) GetContext() ([]byte, error) {
 }
 
 // Statistic statistic remote execute info.
-func (v *VMBase) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
+func (v *VMBase) Statistic(from, to *fcom.ChainInfo) (*fcom.RemoteStatistic, error) {
 	return &fcom.RemoteStatistic{}, nil
 }
 
 // LogStatus records blockheight and time
-func (v *VMBase) LogStatus() (int64, error) {
-	return 0, nil
+func (v *VMBase) LogStatus() (*fcom.ChainInfo, error) {
+	return nil, nil
 }
 
 // BeforeSet will call before set context.

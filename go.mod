@@ -14,6 +14,7 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.12
+	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.4.3
@@ -38,5 +39,7 @@ require (
 )
 
 replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220330033206-e17cdc41300f
+
+replace github.com/hyperbench/hyperbench-common => github.com/shinyxhh/hyperbench-common v0.0.0-20220505100408-ec5555ccfb5b
 
 go 1.15

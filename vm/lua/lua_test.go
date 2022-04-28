@@ -121,10 +121,10 @@ return case
 	assert.NoError(t, err)
 	assert.NotNil(t, bs)
 
-	rs, err := vm.Statistic(1, 1)
+	rs, err := vm.Statistic(&fcom.ChainInfo{TimeStamp: 1}, &fcom.ChainInfo{TimeStamp: 1})
 	assert.NoError(t, err)
 	assert.NotNil(t, rs)
-	rs, err = vm2.Statistic(1, 1)
+	rs, err = vm2.Statistic(&fcom.ChainInfo{TimeStamp: 1}, &fcom.ChainInfo{TimeStamp: 1})
 	assert.NoError(t, err)
 	assert.NotNil(t, rs)
 

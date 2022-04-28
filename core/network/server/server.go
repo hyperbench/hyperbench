@@ -83,14 +83,15 @@ func (s *Server) Start() error {
 			c.String(http.StatusUnauthorized, "busy")
 			return
 		}
-		dir, _ := c.GetPostForm("configDir")
-		f, err := c.FormFile("file")
+		dir, _ := c.GetPostForm(network.ConfigPath)
+		f, err := c.FormFile(network.FileName)
 		if err != nil {
 			s.logger.Error("need file")
 			c.String(http.StatusNotAcceptable, "need file")
 			return
 		}
 		s.fp = f.Filename[0 : strings.LastIndex(f.Filename, "/")+1]
+		// clear benchmark path for upload
 		s.removeBenchmark(s.fp)
 		s.createBenchmark(s.fp)
 		s.logger.Noticef("upload %v", f.Filename)
@@ -114,7 +115,9 @@ func (s *Server) Start() error {
 		}
 		s.removeBenchmark(f.Filename)
 		viper.AddConfigPath(s.fp)
-		viper.SetConfigFile(dir)
+		if dir != "" {
+			viper.SetConfigFile(dir)
+		}
 		err = viper.ReadInConfig()
 		if err != nil {
 			s.logger.Errorf("can not read in config")
@@ -156,16 +159,16 @@ func (s *Server) Start() error {
 
 		s.workerHandle, err = worker.NewLocalWorker(worker.LocalWorkerConfig{
 			Index:    int64(s.index),
-			Instant:  int64(viper.GetInt("engine.instant") / l),
-			Wait:     viper.GetDuration("engine.wait"),
+			Instant:  int64(viper.GetInt(fcom.EngineInstantPath) / l),
+			Wait:     viper.GetDuration(fcom.EngineWaitPath),
 			Cap:      int64(viper.GetInt(fcom.EngineCapPath) / l),
 			Rate:     int64(viper.GetInt(fcom.EngineRatePath) / l),
 			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 
 		if err != nil {
-			s.logger.Error("create worker error")
-			c.String(http.StatusNotAcceptable, "create worker error")
+			s.logger.Error("create worker error: %v", err)
+			c.String(http.StatusNotAcceptable, "create worker error: %v", err)
 			return
 		}
 	})
