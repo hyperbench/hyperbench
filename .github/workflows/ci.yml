@@ -18,10 +18,7 @@ jobs:
 
       - name: Go report card
         uses: creekorful/goreportcard-action@v1.0
-#      - name: Run Golangci-lint
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: v1.29
+
   test:
     name: Unit Testing
     runs-on: ubuntu-18.04
@@ -31,21 +28,19 @@ jobs:
         with:
           go-version: 1.15
         id: go
-#      - name: Get failpoint
-#        run: |
-#          git clone https://github.com/pingcap/failpoint.git
-#          ls -al
-#          pwd
-#          cd failpoint/failpoint-ctl
-#          go build
-#          sudo cp failpoint-ctl $GOPATH/bin
       - name: Checkout
         uses: actions/checkout@v2
       - name: Enable failpoint
         run: make test
-#      - name: Enable failpoint
-#        run : failpoint-ctl enable
-#      - name: Go Test
-#        run: go test -v ./...
-#      - name: Disable failpoint
-#        run: failpoint-ctl disable
+
+  sync:
+    name: Sync Code To Gitee
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Sync to Gitee
+        uses: wearerequired/git-mirror-action@master
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY_LMM }}
+        with:
+          source-repo: "git@github.com:hyperbench/hyperbench.git"
+          destination-repo: "git@gitee.com:hyperbench/hyperbench.git"
