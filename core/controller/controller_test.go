@@ -15,6 +15,7 @@ func TestController(t *testing.T) {
 	m["engine.instant"] = 1
 	m["engine.wait"] = 0
 	m["engine.duration"] = 1
+	m["verify.enable"] = true
 	viper.MergeConfigMap(m)
 	ctl, err := NewController()
 	assert.NoError(t, err)

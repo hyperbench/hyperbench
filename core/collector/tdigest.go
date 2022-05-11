@@ -85,6 +85,8 @@ type Details struct {
 	ConfirmLatency *TDigest
 	WriteLatency   *TDigest
 	Status         map[fcom.Status]int
+	Tps            *TDigest
+	Bps            *TDigest
 }
 
 // NewDetails create a Details and return.
@@ -125,8 +127,11 @@ func (d *Details) add(result *fcom.Result) {
 	if result.ConfirmTime != 0 {
 		d.ConfirmLatency.Add(float64(result.ConfirmTime-result.BuildTime), w)
 	}
-	if result.WriteTime != 0 {
-		d.ConfirmLatency.Add(float64(result.WriteTime-result.BuildTime), w)
+	if result.WriteTime != 0 && result.NodeBuildTime != 0 {
+		d.WriteLatency.Add(float64(result.WriteTime-result.NodeBuildTime), w)
+	}
+	if result.WriteTime != 0 && result.NodeBuildTime == 0 {
+		d.WriteLatency.Add(float64(result.WriteTime-result.BuildTime), w)
 	}
 }
 
@@ -201,7 +206,7 @@ func (t *TDigestDetailsCollector) Get() *fcom.Data {
 			Statuses: v.Status,
 			Send:     v.SendLatency.getLatency(),
 			Confirm:  v.ConfirmLatency.getLatency(),
-			Write:    v.ConfirmLatency.getLatency(),
+			Write:    v.WriteLatency.getLatency(),
 		}
 		data.Results = append(data.Results, r)
 	}
@@ -286,7 +291,7 @@ func (t *TDigestSummaryCollector) Get() *fcom.Data {
 		Statuses: v.Status,
 		Send:     v.SendLatency.getLatency(),
 		Confirm:  v.ConfirmLatency.getLatency(),
-		Write:    v.ConfirmLatency.getLatency(),
+		Write:    v.WriteLatency.getLatency(),
 	}
 	data.Results = append(data.Results, r)
 	return data

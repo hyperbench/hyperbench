@@ -49,6 +49,8 @@ type WorkerVM interface {
 	BeforeRun() error
 	// Run create and send tx to client.
 	Run(ctx fcom.TxContext) (*fcom.Result, error)
+	// Verify check the relative time of transaction
+	Verify(*fcom.Result, ...fcom.Option) *fcom.Result
 	// AfterRun will call once after run.
 	AfterRun() error
 }
