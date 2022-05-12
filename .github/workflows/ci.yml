@@ -32,15 +32,3 @@ jobs:
         uses: actions/checkout@v2
       - name: Enable failpoint
         run: make test
-
-  sync:
-    name: Sync Code To Gitee
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Sync to Gitee
-        uses: wearerequired/git-mirror-action@master
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY_LMM }}
-        with:
-          source-repo: "git@github.com:hyperbench/hyperbench.git"
-          destination-repo: "git@gitee.com:hyperbench/hyperbench.git"
