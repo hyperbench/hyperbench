@@ -9,11 +9,12 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
-	github.com/hyperbench/hyperbench-common v0.0.0-20220330071908-4ae552479a90
+	github.com/hyperbench/hyperbench-common v0.0.1
 	github.com/hyperledger/fabric v1.4.3
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.12
+	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.4.3
@@ -31,11 +32,13 @@ require (
 	github.com/yuin/gopher-lua v0.0.0-20190206043414-8bfc7677f583
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
+	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
+	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	gonum.org/v1/gonum v0.6.0 // indirect
 )
 
-replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220209214540-3681064d5158
+replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220330033206-e17cdc41300f
 
 go 1.15

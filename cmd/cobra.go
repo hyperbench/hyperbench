@@ -3,19 +3,19 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
-
-	"github.com/hyperbench/hyperbench/core/network/server"
-
-	"github.com/op/go-logging"
-	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
-	"github.com/spf13/viper"
 
 	fcom "github.com/hyperbench/hyperbench-common/common"
 
 	"github.com/hyperbench/hyperbench/core/controller"
+	"github.com/hyperbench/hyperbench/core/network/server"
 	"github.com/hyperbench/hyperbench/filesystem"
+	"github.com/op/go-logging"
+	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -102,13 +102,34 @@ func initConfig() {
 }
 
 func initBenchmark(dir string) {
-	viper.AddConfigPath(dir)
-	err := viper.ReadInConfig()
+	if !strings.HasSuffix(dir, "/") {
+		dir = dir + "/"
+	}
+	// support for specifying configuration files or specifying test case directories
+	// if use test case directory, it will use file named "config" for configuration file
+	s, err := os.Stat(dir)
+	if err != nil {
+		logger.Critical("can not find test case: %v", err)
+		return
+	}
+	isFile := !s.IsDir()
+	var path string
+	if isFile {
+		viper.SetConfigFile(dir)
+		path = dir[0 : strings.LastIndex(dir, "/")+1]
+		viper.Set(fcom.BenchmarkConfigPath, dir)
+	} else {
+		path = dir
+	}
+	viper.AddConfigPath(path)
+
+	err = viper.ReadInConfig()
 	if err != nil {
 		logger.Critical("can not read in config: %v", err)
 		return
 	}
-	viper.Set(fcom.BenchmarkDirPath, dir)
+	viper.Set(fcom.BenchmarkDirPath, path)
+
 	fcom.InitLog()
 }
 

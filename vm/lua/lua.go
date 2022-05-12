@@ -52,12 +52,6 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	// inject test case metatable
 	vm.injectTestcaseBase()
 
-	// append plugins to the test case metatable
-	err = vm.setPlugins(vm.meta)
-	if err != nil {
-		return nil, err
-	}
-
 	// load script
 	err = vm.vm.DoFile(base.Path)
 	if err != nil {
@@ -168,7 +162,7 @@ func (v *VM) GetContext() ([]byte, error) {
 }
 
 // Statistic statistic remote execute info.
-func (v *VM) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
+func (v *VM) Statistic(from, to *fcom.ChainInfo) (*fcom.RemoteStatistic, error) {
 
 	return v.client.Statistic(fcom.Statistic{
 		From: from,
@@ -177,7 +171,7 @@ func (v *VM) Statistic(from, to int64) (*fcom.RemoteStatistic, error) {
 }
 
 // LogStatus records blockheight and time
-func (v *VM) LogStatus() (end int64, err error) {
+func (v *VM) LogStatus() (chainInfo *fcom.ChainInfo, err error) {
 	return v.client.LogStatus()
 }
 
@@ -260,14 +254,14 @@ func (v *VM) setPlugins(table *lua.LTable) (err error) {
 	options := viper.GetStringMap(fcom.ClientOptionPath)
 	contractPath := viper.GetString(fcom.ClientContractPath)
 	args, _ := viper.Get(fcom.ClientContractArgsPath).([]interface{})
-	options["vmIdx"] = v.index.VM
-	options["wkIdx"] = v.index.Worker
 	v.client, err = blockchain.NewBlockchain(base2.ClientConfig{
 		ClientType:   clientType,
 		ConfigPath:   clientConfigPath,
 		ContractPath: contractPath,
 		Args:         args,
 		Options:      options,
+		VmID:         int(v.index.VM),
+		WorkerID:     int(v.index.Worker),
 	})
 
 	if err != nil {

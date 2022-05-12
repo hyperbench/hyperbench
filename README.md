@@ -12,6 +12,12 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 
 - distributed: support distributed test function, support the use of multiple presses to simultaneously test the blockchain system, simple and easy to use
 
+## Version
+
+| hyperbench version | hyperbench-plugins version |
+|--------------------|----------------------------|
+| v1.0.1             | v0.0.1                     |
+| v1.0.0             | v0.0.1-alpha               |
 ## Quick Start
 
 ### Build Hyperbench from Source Code

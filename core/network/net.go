@@ -26,6 +26,10 @@ const (
 	TeardownPath = "/teardown"
 	// CheckoutCollectorPath checkout collector path.
 	CheckoutCollectorPath = "/checkout-collector"
+	// ConfigPath key of configPath
+	ConfigPath = "configDir"
+	// FileName key of file
+	FileName = "file"
 )
 
 // Bytes2Hex convert bytes to hex.

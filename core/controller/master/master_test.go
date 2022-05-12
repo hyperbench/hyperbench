@@ -1,6 +1,7 @@
 package master
 
 import (
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -31,7 +32,7 @@ func TestLocalMaster(t *testing.T) {
 	assert.NotNil(t, bs)
 	err = localMaster.Prepare()
 	assert.NoError(t, err)
-	_, err = localMaster.Statistic(1, 1)
+	_, err = localMaster.Statistic(&fcom.ChainInfo{TimeStamp: 1}, &fcom.ChainInfo{TimeStamp: 1})
 	assert.NoError(t, err)
 	_, err = localMaster.LogStatus()
 	assert.NoError(t, err)

@@ -27,7 +27,7 @@ source ~/.bashrc
 
 ### 标准包安装Golang
 
-Go语言[官网](https://golang.org/dl/)提供了大部分平台打包好的一键安装包，将这些包默认安装到`/usr/local/go`（windows系统默认路径为`C:\Go`）
+Go语言[官网](https://golang.org/dl/)提供了大部分平台打包好的一键安装包，将这些包默认安装到`/usr/local/go`
 
 **Mac**
 
@@ -87,18 +87,31 @@ brew install go
 ```text
 cd $GOPATH/src
 git clone git@github.com:hyperbench/hyperbench.git
-git checkout master
+# 选择版本分支，例如v1.0.1
+git checkout v1.0.1
 
-export GO111MODULE=off 
+export GO111MODULE=on 
 ```
 
 使用makefile进行编译
 
 ```text
 make build
+# 此处出现packr缺失错误时，请确保packr的安装路径在您的环境目录下
 ```
 
 编译后会生成二进制文件`hyperbench`，可以按照说明进行运行，推荐将`hyperbench`放到`/usr/local/bin`或者`$GOPATH/bin`目录下，方便使用。
+### 编译区块链适配插件`Hyperbench-plugins`
+下载源码
+``` text
+git clone https://github.com/hyperbench/hyperbench-plugins.git
+# 选择对应版本分支,例如v0.0.1
+git checkout v0.0.1
+# 选择需要使用的区块链适配插件，例如hyperchain
+cd hyperbench-plugins/hyperchain
+# 编译插件,插件名称在配置阶段需要使用
+make build
+```
 
 # 第二章 使用与配置
 
@@ -106,7 +119,7 @@ make build
 
 ## 工作目录初始化
 
-在使用hyperbench时，需要使用一个独立的工作目录。**所有hyperbench的操作都需要在工作目录下执行，不可以在工作目录之外或者是工作目录的子目录中，否则会产生异常**。您可以通过以下命令初始化出一个工作目录
+在使用hyperbench时，需要使用一个独立的工作目录。所有hyperbench的操作都需要在工作目录（benchmark）同级目录下执行，不可以在目录之外或者是子目录中，否则会产生异常。您可以通过以下命令初始化出一个工作目录。
 
 ```text
 # 创建test空目录
@@ -127,41 +140,50 @@ test
 
 ```text
 benchmark
-├── remote                # hyperchain 分布式压测转账例子
-├── remote-evm            # hyperchain 分布式压测solidity setHash例子
-├── local                 # hyperchain 单机压测转账例子
-├── fabricSacc            # fabric go 合约存取例子（key，value）
-├── hvm                   # hvm 合约例子
-├── hvmSBank              # hvmSBank 合约例子
-├── invokeExample         # hyperchain solidity setHash例子
-├── javaContract          # hyperchain java合约例子SimulateBank
-└── transfer              # hyperchain 转账例子
+├── hyperchain       # hyperchain测试用例
+│	├── azolla          # azolla测试用例
+│	├── evmType         # evm合约类型测试用例
+│	├── extraID         # transfer extra参数测试用例
+│	├── hvmContract     # hvm 合约用例
+│	├── hvmSBank        # hvmSBank 合约用例
+│	├── invokeExample   # solidity合约 setHash用例
+│	├── local           # 单机压测转账例子
+│	├── remote          # 分布式压测转账用例
+│	└── remote-evm      # 分布式压测solidity setHash用例
+├── fabric           # fabric测试用例
+│	├── Sacc            # go合约存取用例（key，value）
+│	└── example         # go合约转账、查询、删除用例
+├── ethereum         # ethereum测试用例  
+│	├── invoke          # evm合约存取用例（key，value）
+│	└── transfer        # 账户转账用例
+├── xuperchain       # xuperchain测试用例  
+│	├── evmContract     # evm合约increase、get用例
+│	└── goContract      # go合约increase、get用例
 ```
 
-对于每一个例子，目录下会有对应平台的网络配置目录（区块链SDK配置)、测试脚本以及压力测试相关的文件（合约、配置文件等）。例如，local目录下的文件结构如下所示：
+对于每一个例子，目录下会有对应平台的网络配置目录（区块链SDK配置)、测试脚本以及压力测试相关的文件（合约、配置文件等）。例如，benchmark/hyperchain/local目录下的文件结构如下所示：
 
 ```text
 local
-|_hyperchain  # hyperchain的网络配置目录
-| |_hpc.toml  # hyperchain gosdk对应的网络配置文件
-|_script.lua  # 测试脚本
-|_config.toml # 压测相关配置
+├── hyperchain    # hyperchain的网络配置目录
+│   └── hpc.toml  # hyperchain gosdk对应的网络配置文件
+├── script.lua    # 测试脚本
+└── config.toml   # 压测相关配置
 ```
 
-remote-evm目录下的文件结构如下所示：
+benchamrk/hyperchain/remote-evm目录下的文件结构如下所示：
 
 ```text
 remote-evm
-|_contract                       # 合约目录
-| |_README.md               
-| |_evm                          # 具体合约类型相关目录
-| | |_source_solc_SetHash.bin    # 合约bin文件
-| | |_source_solc_SetHash.solc   # 合约源文件
-| | |_source_solc_SetHash.abi    # 合约abi文件
-|_hyperchain                     # hyperchain的网络配置目录
-| |_hpc.toml                     # hyperchain gosdk对应的网络配置文件
-|_script.lua                     # 测试脚本
-|_config.toml                    # 压测相关配置
+├── contract                         # 合约目录
+│   ├── evm                          # 具体合约类型相关目录
+│   │   ├── source_solc_SetHash.bin  # 合约bin文件
+│   │   ├── source_solc_SetHash.solc # 合约源文件
+│   │   └── source_solc_SetHash.abi  # 合约abi文件
+├── hyperchain                       # hyperchain的网络配置目录
+│   └── hpc.toml                     # hyperchain gosdk对应的网络配置文件
+├── script.lua                       # 测试脚本
+└── config.toml                      # 压测相关配置
 ```
 
 
@@ -173,12 +195,16 @@ remote-evm
 运行压测时使用start子命令，指令格式如下：
 
 ```text
-hyperbench start path/to
+hyperbench start path/to（/configuration）
 # 需要说明的是这里的path/to是指测试例子的文件夹的路径
+# path/to/configuration指的是具体的配置文件路径，这两种方式都支持
+# 若不指明配置文件名，则需要保证压测目录下有名为config的配置文件
 
 # 例如有一个本机压测转账的例子，在当前hyperbench目录下的/benchmark/local
 # 那么指令就是
 hyperbench start benchmark/local
+或
+hyperbench start benchmark/local/config.toml
 ```
 
 在start子命令运行完成后我们可以看到命令行提示如下：
@@ -195,73 +221,61 @@ hyperbench start benchmark/local
 
 - **client** 主要包括压测平台及需要用到的文件、参数配置
 
-- **recorder **主要包括压测数据统计结果输出相关的配置
+- **recorder** 主要包括压测数据统计结果输出相关的配置
 
 ### **engine**
 
 engine是用来进行压力控制的，即发送的压力数。
 
-| 参数名      | 概述                 | 类型     | 示例           |
-| -------- | ------------------ | ------ | ------------ |
-| rate     | 每秒发送的交易数量（压力设置）    | number | 100          |
-| duration | 压测持续时间             | string | "3m" (表示3分钟) |
+| 参数名      | 概述              | 类型     | 示例           |
+|----------|-----------------|--------|--------------|
+| rate     | 每秒发送的交易数量（压力设置） | number | 100          |
+| duration | 压测持续时间          | string | "3m" (表示3分钟) |
 | cap      | 启动的用户数量（同时也是最大并发数） | number | 100          |
-
+| instant  | 每个批次发送的交易数      | number | 100          |
+| wait     | 压力输出虚拟机获取最大等待时间 | string | "5ms"        |
 下面详细说明一下各个项的具体用途：
 
 1. **rate** ：压力控制的手段之一，压力引擎会根据rate指定的数值N，尝试每秒发送N笔交易。
 
-1. **duration** ：压力控制的手段之一，描述压力引擎发送交易的持续时间，可以用"ns", "us" ( "µs"), "ms", "s", "m", "h"这几个单位来组合描述时长，例如持续90分钟的压测，既可以用"1h30m"也可以"90m"来表示。
+2. **duration** ：压力控制的手段之一，描述压力引擎发送交易的持续时间，可以用"ns", "us" ( "µs"), "ms", "s", "m", "h"这几个单位来组合描述时长，例如持续90分钟的压测，既可以用"1h30m"也可以"90m"来表示。
 
-1. **cap**：压力控制的手段之一，限制系统的最大并发数（当达到最大并发数的时候，系统不会继续提高并发压力，会出现实际发送的TPS和设定的TPS不一致的情况），同时这个数值限制系统最多同时保存多少份脚本控制的上下文。更通俗的来说，这个指标实际上是同时最多模拟多少个用户产生压力，每一个模拟用户的行为是根据测试脚本和各自的保存的上下文进行压力参数的生成。
+3. **cap**：压力控制的手段之一，限制系统的最大并发数（当达到最大并发数的时候，系统不会继续提高并发压力，会出现实际发送的TPS和设定的TPS不一致的情况），同时这个数值限制系统最多同时保存多少份脚本控制的上下文。更通俗的来说，这个指标实际上是同时最多模拟多少个用户产生压力，每一个模拟用户的行为是根据测试脚本和各自的保存的上下文进行压力参数的生成。
+
+4. **instant**: 压力控制的手段之一，压力引擎发送交易并不是一笔一笔发送的，而是一批一批发送的，instant指定每一批的交易数量。决定压力发送策略，即决定共分多少批次发送交易，此项可能会直接影响压力发送效果，为必须设置项，且不可为0，建议小于等于cap数。
+
+5. **wait**: 获取压力输出最小单位虚拟机时的最大等待时间，即可以自由设置为block或非block形式。不设置或设置为0时即为非block形式获取。
 
 ### **client**
 
 client是用来配置所使用的区块链连接、测试脚本、合约及客户端选项的。
 
-| 参数名      | 概述                                 | 类型       | 实例                                |
-| -------- | ---------------------------------- | -------- | --------------------------------- |
-| script   | 指定测试脚本的路径                          | string   | "benchmark/remote-evm/script.lua" |
-| type     | 区块链类型                              | string   | "hyperchain"                      |
-| config   | 区块链sdk配置路径                         | string   | "benchmark/remote-evm/hyperchain" |
-| contract | 要测试的合约文件夹的路径（作为参数传给deployContract) | string   | "benchmark/remote-evm/contract"   |
-| args     | 合约参数路径                             | []string |                                   |
-
+| 参数名       | 概述                                 | 类型     | 实例                                |
+|-----------|------------------------------------| ------ |-----------------------------------|
+| script    | 指定测试脚本的路径                          | string | "benchmark/remote-evm/script.lua" |
+| type      | 区块链类型                              | string | "hyperchain"                      |
+| config    | 区块链sdk配置路径                         | string | "benchmark/remote-evm/hyperchain" |
+| contract  | 要测试的合约文件夹的路径（作为参数传给deployContract) | string | "benchmark/remote-evm/contract"   |
+| args      | 合约参数路径                             | []string | ["A", "123"]                      |
+| plugin    | 区块链适配插件路径                          | string | "hyperchain.so"                   |
 **【注意】**这里的配置的路径是**相对工作目录的路径或者绝对路径**，不是相对于config.toml的路径。
 
 下面详细说明一下各项的用途：
 
-1. **script** ：系统会根据script指定的脚本的内容将其拼接成一个完整的lua测试脚本，放到`lua/testImpl.lua` 路径下真正被系统所使用，测试脚本的编写方法具体参见“测试脚本编写”部分的说明。
+1. **script** ：系统会根据script指定的脚本的内容将其拼接成一个完整的lua测试脚本，测试脚本的编写方法具体参见“测试脚本编写”部分的说明。
 
-1. **type** ：标识所使用的区块链网络的类型，系统会根据你使用的type来进行适配层的选择，一般来讲我们只需要使用"hyperchain"或“flato”即可，当然系统现在也支持fabric的压测。
+2. **type** ：标识所使用的区块链网络的类型，系统会根据你使用的type来进行适配层的选择，目前系统支持hyperchain、fabric、eth（ethereum）以及xuperchain。。
 
-1. **config** ：连接区块链网络配置文件目录，当测试hyperchain时，"config/hyperchain"指向的是一个连接localhost的配置文件目录，目录的详细配置方案请参见hyperchain的go sdk文档。
+3. **config** ：连接区块链网络配置文件目录，config指向的是被测网络的配置文件以及keystore目录，hyperchain详细配置方案请参见hyperchain的go sdk文档，ethereum和xuperchain的网络配置只需要配置节点ip与端口。但需要注意的是ethereum的ip地址需要指明rpc类型，例如http://localhost或者ws://localhost。fabric的网络配置文件较为复杂，详见fabric官方文档。类似xuperchain和ethereum必须要有代币账户类型的区块链，必须在config/keystore目录下配置有代币的账户文件，具体配置细节可参考benchmark内readme。
 
-1. **contract**  ：系统会根据contract项指向的目录下的文件结构，初始化合约的初始化（当contract指向一个无效路径时，例如配置为空字符串、不配置或者是指向一个无效路径时，不会初始化合约，只能正常执行转账），具体请参见”合约初始化“部分的说明进行contract目录的组织。（__当测试的合约为fabric合约时，合约代码需要放在gopath目录下，配置的contract合约目录路径需要是相对于gopath的src的路径__）
+4. **contract**  ：系统会根据contract项指向的目录下的文件结构，初始化合约的初始化（当contract指向一个无效路径时，例如配置为空字符串、不配置或者是指向一个无效路径时，不会初始化合约，只能正常执行转账），具体请参见”合约初始化“部分的说明进行contract目录的组织。（__当测试的合约为fabric合约时，合约代码需要放在gopath目录下，配置的contract合约目录路径需要是相对于gopath/src的路径__）
 
-1. **args **：部署合约需要用到的参数路径，系统会根据指定的参数进行合约部署，一般在部署合约时不用指定参数，但是当部署一些特殊合约时可能需要用到。例如，部署fabric合约时，需要调用合约的init方法对合约进行初始化，并传入相应的init参数，这些都可通过args进行配置。
+5. **args**：部署合约需要用到的参数路径，系统会根据指定的参数进行合约部署，一般在部署合约时不用指定参数，但是当部署一些特殊合约时可能需要用到。例如，部署fabric合约时，需要调用合约的init方法对合约进行初始化，并传入相应的init参数，这些都可通过args进行配置。
 
-client下有options配置项，用于配置客户端选项。
+6. **plugin**: 编译后区块链适配插件的路径，支持绝对路径和相对路径。若此路径无效或者未配置，则系统不能正常启动。
 
-| 参数名        | 概述                   | 类型     | 实例                                    |
-| ---------- | -------------------- | ------ | ------------------------------------- |
-| keystore   | 账户仓库路径               | string | "benchmark/remote-evm/keystore/ecdsa" |
-| type       | 账户签名类型               | string | "ECDSA"、"SM2"（默认ECDSA）                |
-| instant    | 交易批量发送数              | number | 10                                    |
-| channel    | fabric网络对应的channelID | string | "mychannel"                           |
-| option.MSP | fabric网络是否启用MSP      | bool   | "false"                               |
+#### client下有options配置项，用于配置客户端选项。每个区块链平台有不同的options配置项，具体请阅读第四章。
 
-下面详细说明一下各项的用途：
-
-1. **keystore** ：如果需要使用指定的账号，可以配置keystore，系统会读取keystore指向的目录下所有文件（不递归，只读取第一级文件），对于hyperchain，每个文件表示一个账号，文件名无所谓，但是文件内容必须是由hyperchain的go SDK生成的sign指定的类型的account json文件，否则无法正常识别。
-
-1. **type** ：系统会根据这个标识来判断使用哪种类型的账户进行交易的发送，对于hyperchain，目前支持sm2和ecdsa两种账户，对大小写不敏感。
-
-1. **instant** ：压力控制的手段之一，压力引擎发送交易并不是一笔一笔发送的，而是一批一批发送的，instant指定每一批的交易数量。当instant不填写或者等于0时，默认instant为10，当rate小于10时，则instant为1，即一笔一笔的发送交易（建议这个值相对于tps不能太小，最好大于tps的百分之一）。
-
-1. **channel** ：用于指定fabric网络中对应的channelID。
-
-1. **option.MSP** ：用于配置fabric网络是否启用MSP服务。
 
 **recorder**
 
@@ -291,7 +305,7 @@ recorder用来配置压力统计结果输出相关的配置。目前压力统计
 
 下面详细说明一下各项的用途：
 
-1. **level **：用于指定log文件输出的日志级别，当没有指定值，或者指定的是非法日志级别时，会将`NOTICE` 设为默认的日志级别。从高到低，日志级别依次为：CRITICAL、ERROR、WARNING、NOTICE、INTO、DEBUG。
+1. **level**：用于指定log文件输出的日志级别，当没有指定值，或者指定的是非法日志级别时，会将`NOTICE` 设为默认的日志级别。从高到低，日志级别依次为：CRITICAL、ERROR、WARNING、NOTICE、INTO、DEBUG。
 
 1. **dir** ：用于指定log文件的存放目录，当没有指定值，或指定的空值时，会将`./log` 设为存放log文件的默认路径。
 
@@ -301,13 +315,11 @@ recorder用来配置压力统计结果输出相关的配置。目前压力统计
 
 系统会根据测试计划`config.toml`中`client.contract`项所指定的目录下的目录结构进行规则匹配，从而初始化测试所使用的合约，对于hyperchain的测试来说，初始化的优先级依次如下：
 
-1. EVM solidity合约
+1. EVM solidity合约 
 
-1. JVM java合约初始化
+2. HVM java合约初始化
 
-1. HVM java合约初始化
-
-1. 无法识别，不初始化合约
+3. 无法识别，不初始化合约
 
 ### hyperchain EVM合约初始化
 
@@ -327,44 +339,19 @@ recorder用来配置压力统计结果输出相关的配置。目前压力统计
 # 如果目录结构是这样子的，那么会使用addr文件中的地址，和abi文件中的ABI，不会重新部署合约
 contract
 └── evm                      # 使用evm合约
-	├── contract.abi         # abi
-	└── contract.addr        # 可以是0x开头的，也可以不是
+    ├── contract.abi         # 合约abi文件
+    └── contract.addr        # 合约addr文件
 
 # 如果目录结构是这样子的，那么会使用bin文件中的二进制进行部署，和abi文件中的ABI
 contract
 └── evm                      # 使用evm合约
-	├── contract.abi         # abi
-	└── contract.bin         # 合约的二进制文件
+    ├── contract.abi         # 合约abi文件
+    └── contract.bin         # 合约bin文件
 
 # 如果目录结构是这样子的，那么会使用bin文件中的二进制进行部署，和abi文件中的ABI
 contract
 └── evm                      # 使用evm合约
-	└── contract.solc        # 可以是0x开头的，也可以不是 
-```
-
-### hyperchain JVM合约初始化
-
-如果你希望测试hyperchain的JVM合约，请在`contract`指定的目录下创建一个名为`jvm`的目录，按照你所希望的初始化方式，组织`jvm`目录下的文件，初始化优先级依次如下：
-
-1. 如果你希望使用已经部署了的合约，你可以将合约地址存放到目录下扩展名为`addr`的文件中。
-
-1. 如果希望系统帮你部署合约，那么你可以创建一个包含了所有部署需要的内容的java合约文件夹，并命名为java放到目录下。
-
-**示例**
-
-```text
-# 如果目录是这样子的，那么会使用addr文件中的地址
-contract
-└── jvm                          # 使用jvm合约
-	└── contract.addr            # 可以使0x开头的，也可以不是
-
-# 如果目录是这样子的，那么会部署合约
-contract
-└── jvm                          # 使用jvm合约
-	└── java                     # 合约文件夹  
-	    ├── contract.properties  # 合约的二进制文件
-		└── cn                   # 合约代码 
-			└── ...              # 合约内容
+    └── contract.solc        # solidity合约 
 ```
 
 ### hyperchain HVM合约初始化
@@ -381,14 +368,14 @@ contract
 # 如果目录是这样子的，那么会使用addr文件中的地址
 contract
 └── hvm                          # 使用jvm合约
-	├── contract.abi             # abi文件内容
-    └── contract.addr            # 可以使0x开头的，也可以不是
+    ├── contract.abi             # 合约abi文件
+    └── contract.addr            # 合约addr文件
 
 # 如果目录是这样子的，那么会部署合约
 contract
 └── hvm                          # 使用jvm合约  
-    ├── contract.abi             # 合约的abi文件
-	└── contract.jar             # 合约的jar包
+    ├── contract.abi             # 合约abi文件
+    └── contract.jar             # 合约jar包
 ```
 
 ## 测试脚本编写
@@ -463,8 +450,8 @@ local case = testcase.new() -- 创建测试实例
 function case:Run() -- 实现钩子函数Run函数
     local ret = case.blockchain:Invoke({
         func="setHash", -- 调用的合约方法
-        args={tostring(case.index.tx),
-              tostring(case.index.worker)} -- 合约方法需要的参数列表。以string的形式入参
+        args={tostring(case.index.Tx),
+              tostring(case.index.Worker)} -- 合约方法需要的参数列表。以string的形式入参
     }) -- 调用case中提供的插件blockchain中的Invoke方法用于执行合约
     case.blockchain:Confirm(ret) -- 调用case中提供的查看blockchain中的Confirm函数用于查询交易回执
     return ret
@@ -474,7 +461,7 @@ return case
 
 ```
 
-`case.index.tx` 是用来标记这个是当前压力机发送的第几个交易，从0开始。`case.index.worker` 是用来标记当前交易是使用的第几个压力机发送的，从0开始。这两个组合起来可以唯一标识一笔交易。
+`case.index.Tx` 是用来标记这个是当前压力机发送的第几个交易，从0开始。`case.index.Worker` 是用来标记当前交易是使用的第几个压力机发送的，从0开始。这两个组合起来可以唯一标识一笔交易。
 
 将上面这一段代码用于测试，就可以以这样的方式进行合约`setHash`函数的测试，每一次调用时，key是一个全局的编号，index是一个本地的编号，假设在测试配置中是单机压测，那么最后插入的数据可能是这样的：
 
@@ -563,22 +550,23 @@ return case
 
 在脚本中，所有需要与虚拟机进行的交互被统一封装成一致的钩子函数，在对应的虚拟机中有各自的实现和调用方式，选择lua虚拟机的实现方式是使用`testcase.new()` 创建lua虚拟机的实现示例，然后根据需要实现里面的钩子函数。hyperbench提供了一些钩子函数，绝大部分情况下，使用者只需要使用到`Run` 函数。
 
-| 函数名          | 说明                       |
-| ------------ | ------------------------ |
-| BeforeDeploy | 部署合约前调用（master调用一次）      |
-| BeforeGet    | 生成上下文前调用（master调用一次）     |
+| 函数名          | 说明                      |
+|--------------| ----------------------- |
+| BeforeDeploy | 部署合约前调用（master调用一次）     |
+| BeforeGet    | 生成上下文前调用（master调用一次）    |
+| BeforeSet    | 设置上下文前调用（每个cap调用一次）     |
 | BeforeRun    | 运行前调用（每个worker运行前都会调用一次） |
-| Run          | 压力测试运行的函数（每次发交易时调用）      |
+| Run          | 压力测试运行的函数（每次发交易时调用）     |
 | AfterRun     | 运行后调用（每个worker运行后都会调用一次） |
 
 ### Lua API
 
 **blockchain API**
 
-在脚本中，所有需要与区块链系统进行的交互被统一封装成一致的API，在适配层各自实现，具体选择哪种blockchain实现的方式是根据`type` 所指定的区块链系统来选择的。blockchain实现了一些函数，绝大部分情况下，使用者只需要使用到`invokeContract`和`transfer`两个函数：
+在脚本中，所有需要与区块链系统进行的交互被统一封装成一致的API，在适配层各自实现，具体选择哪种blockchain实现的方式是根据`type` 所指定的区块链系统来选择的。blockchain实现了一些函数，绝大部分情况下，使用者只需要使用到`Invoke`和`Transfer`两个函数：
 
 | 函数名            | 参数                                                                      | 返回值                 | 说明                                                    |
-| -------------- | ----------------------------------------------------------------------- | ------------------- | ----------------------------------------------------- |
+| -------------- |-------------------------------------------------------------------------|---------------------|-------------------------------------------------------|
 | DeployContract | -                                                                       | -                   | 部署合约                                                  |
 | Invoke         | {func: string 函数名args: []string 参数列表}                                   | userdata: result    | 调用合约函数，返回的userdata如何使用请参见下一小节                         |
 | Transfer       | {from: string 账户别名to: string 账户别名amount: number数额extra: string extra字段} | userdata: result    | 转账，返回值的userdata如何使用请参见下一小节, 默认会使用from别名对应的account进行签名 |
@@ -588,8 +576,8 @@ return case
 | GetContext     | -                                                                       | string：json格式的上下文   | 用来生成一个客户端实例的上下文，上下文内容主要是合约的一些信息，比如合约地址等等              |
 | SetContext     | context: string getContext的返回值                                          | -                   | 同步上下文                                                 |
 | ResetContext   | -                                                                       | -                   | 重置上下文                                                 |
-| Statistic      | {from: number起始时间戳to: number截止时间戳}                                      | userdata: statistic | 用来返回链上统计的信息                                           |
-
+| Statistic      | {from: 链起始状态，to: 链结束状态}                                                 | userdata: statistic | 用来计算两个链状态之间的tps，bps                                   |
+| LogStatus      | -                                                                       | ChainInfo，error     | 链上的状态，包括区块高度、交易数和时间戳                                  |
 **result 结构体**
 
 result是一种特殊的userdata，脚本的`Run`函数需要以这种类型作为返回值，在系统中有四种方式可以产生result类型的userdata
@@ -632,13 +620,14 @@ result是一种特殊的userdata，脚本的`Run`函数需要以这种类型作�
 
 - **statistic.new({from, to})**  除非你要实现一个适配层，不然的话不建议这么做
 
-| 字段名      | 类型     | 说明   |
-| -------- | ------ | ---- |
-| start    | Number | 开始时间 |
-| end      | Number | 结束时间 |
-| blockNum | Number | 总区块数 |
-| txNum    | Number | 总交易数 |
-
+| 字段名      | 类型     | 说明    |
+|----------| ------ |-------|
+| start    | Number | 开始时间  |
+| end      | Number | 结束时间  |
+| blockNum | Number | 总区块数  |
+| txNum    | Number | 总交易数  |
+| TPS      | Number | 压测tps |
+| BPS      | Number | 压测bps |
 
 
 **【注意】**
@@ -653,7 +642,7 @@ result是一种特殊的userdata，脚本的`Run`函数需要以这种类型作�
 
 ## 账户仓库keystore
 
-账号仓库`keystore`在config.toml中是一个可选配置，如果用户希望使用某几个特定账户，那么可以指定`keystore`，系统会将`keystore`指定目录下的所有文件映射成别名"0", "1", "2"...."N"所对应的账户。使用`keystore`的时候需要注意的事情有以下几点：
+账号仓库`keystore`在config.toml中是一个可选配置。但对于某些链必须要有可以使用代币但账户，例如Ethereum和Xuperchain，如果用户希望使用某几个特定账户，那么可以指定`keystore`。使用`keystore`的时候需要注意的事情有以下几点：
 
 - 账户文件必须能够被适配层所读取，对于hyperchain，账户文件必须是由gosdk产生的非加密账号，类型需要和config.toml `client.option.type` 字段配置的一致
 
@@ -804,7 +793,202 @@ worker启动后可以看到如下命令行提示：
 
 启动了worker服务后，在使用分布式压力测试时，在config.toml中`engine.urls` 配置项中配置远程worker的ip和端口即可。
 
-# 第四章 使用示例
+# 第四章 适配平台配置说明
+
+## Hyperchain
+
+如果您想进行hyperchain的测试，请先阅读此手册。
+例如，在`benchmark/hyperchain/hvmSBank`测试用例中。
+
+### 网络连接
+
+hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网络连接配置文件在`hvmSBank/hyperchain/hyperchain.toml`路径。
+
+### 合约
+系统会根据测试计划`config.toml`中`client.contract`项所指定的目录下的目录结构进行规则匹配，从而初始化测试所使用的合约，对于hyperchain的测试来说，初始化的优先级依次如下：
+
+1. EVM solidity合约
+
+2. HVM java合约初始化
+
+3. 无法识别，不初始化合约
+
+#### EVM合约初始化
+
+如果你希望测试solidity编写的合约，请在`contract` 指定的目录下创建一个名为`evm`的目录，按照你所希望的初始化方式组织`evm`目录下的文件结构，初始化优先级依次如下（注意*表示任意字符串都可以）：
+
+1. 如果希望使用已经部署好的合约，那么请将合约的ABI存放到扩展名为`abi`的文件，存放合约地址到扩展名为`addr`文件。
+
+1. 如果希望系统帮你部署合约，那么请将编译好的二进制存放到扩展名为`bin`的文件，并将ABI文件存放到扩展名为`abi`的文件。
+
+1. 如果希望系统帮你部署合约，但是本地又没有编译好合约，那么可以将合约源码存放到扩展名为`solc`的文件中， 注意这是一种不推荐的初始化方式，因为系统有可能无法正确编译你的合约从而导致初始化失败。
+
+#### HVM合约初始化
+如果你希望测试hyperchain的HVM合约，请在`contract`指定的目录下创建一个名为`hvm`的目录，按照你所希望的初始化方式，组织`hvm`目录下的文件，初始化优先级依次如下：
+
+1. 如果你希望使用已经部署了的合约，你可以将合约地址存到扩展名为`addr`的文件中，并且将合约的abi放置到扩展名为`abi`的 文件中。
+
+2. 如果希望系统帮你部署合约，那么你可以将合约编译成的jar包存放到目录下，扩展名为`jar`，并且将合约的abi放置到扩展名为`abi`的文件中。
+
+### client.options
+
+| 参数名             | 概述                        | 类型     | 实例                                    |
+|-----------------|---------------------------| ------ | ------------------------------------- |
+| keystore        | 账户仓库路径                    | string | "benchmark/remote-evm/keystore/ecdsa" |
+| type            | 账户签名类型                    | string | "ECDSA"、"SM2"（默认ECDSA）                |
+| request         | 交易连接类型，rpc或grpc，必需配置项     | string | "rpc"            |
+| crosschain      | 合约调用时是否使用跨链交易             | string | "true"                           |
+| simulate        | 是否使用simulate模式发送交易        | bool   | "false"                               |
+| vmtype          | 合约类型，使用bvm时需要指明，其他无需指明    | string   | "bvm"            |
+| fvmadvancedtype | 使用fvm合约时，是否使用advancedtype | bool   | "false"                               |
+
+下面详细说明一下各项的用途：
+
+1. **keystore** ：如果需要使用指定的账号，可以配置keystore，系统会读取keystore指向的目录下所有文件（不递归，只读取第一级文件），对于hyperchain，每个文件表示一个账号，文件名无所谓，但是文件内容必须是由hyperchain的go SDK生成的sign指定的类型的account json文件，否则无法正常识别。
+
+2. **type** ：系统会根据这个标识来判断使用哪种类型的账户进行交易的发送，对于hyperchain，目前支持sm2和ecdsa两种账户，对大小写不敏感。
+
+3. **request** ：用于配置交易连接类型，rpc或grpc，必需配置项。有rpc和grpc的区别。
+
+4. **crosschain** ：用于配置使用合约时是否使用跨链交易。
+
+5. **simulate** ：用于配置simulate模式交易。
+
+6. **vmtype** ：用于配置合约虚拟机类型，仅需在使用bvm时需要配置。
+
+7. **fvmadvancedtype** ：用于配置使用fvm合约时，是否使用advanced类型。
+
+## Fabric
+如果您想进行Fabric的测试，请先阅读此手册。
+例如，在`benchmark/fabric/Sacc`测试用例中。
+
+### 合约
+再部署合约时，请将合约放置在正确未知，例如`benchmark/fabric/Sacc/contract`。在部署合约时，fabric go-sdk会自动将合约路径加上$GOPATH/src，所以在配置文件中配置合约路径时，请参考`benchmark/fabric/Sacc/config.toml`。
+### client.options
+| 参数名         | 概述                   | 类型     | 实例                                    |
+|-------------|----------------------| ------ | ------------------------------------- |
+| instant     | fabric、xuperchain初始化账户数量               | number | 10                                    |
+| channel     | fabric网络对应的channelID | string | "mychannel"                           |
+| option.MSP  | fabric网络是否启用MSP      | bool   | "false"                               |
+
+下面详细说明一下各项的用途：
+
+1. **instant** ：初始化账户数量。
+
+2. **channel** ：用于指定fabric网络中对应的channelID。
+
+3. **option.MSP** ：用于配置fabric网络是否启用MSP服务。
+
+## Ethereum
+如果您想进行Ethereum的测试，请先阅读此手册。
+例如，在`benchmark/eth/invoke`测试用例中。
+
+### 账户
+至少需要配置一个有代币的账户在正确路径下，需要使用ethereum生成的账户文件。若您需要测试transfer，则至少需要配置两个账户文件。
+
+
+### 网络连接
+请配置ethereum网络连接方式、ip以及端口。连接方式包括：http或者websocket。
+例如：
+```
+[rpc]
+node = "http://localhost"
+port = "8545"
+```
+或
+```
+[rpc]
+node = "ws://localhost"
+port = "8546"
+```
+### 合约
+如果您需要部署合约，请将合约编译后的abi和bin文件放置于正确路径下，例如`benchmark/eth/invoke/contract`，solidity文件非必须。
+
+### 注意项
+
+此处为使用ethereum压测时的一些注意项。
+
+#### NONCE值
+由于ethereum的nonce设置必须连续且递增才能使交易生效，在测试transfer过程中时，FROM账户需保持不变，否则将导致交易失败。
+
+#### 账户地址
+在测试transfer测试用例时，需要设置FROM和TO账户地址。地址名为账户文件最后一段编号，例如，文件名为`UTC--2021-11-08T06-39-32.219546000Z--74d366e0649a91395bb122c005917644382b9452`,它的地址为`74d366e0649a91395bb122c005917644382b9452`。
+### client.options
+| 参数名         | 概述           | 类型     | 实例    |
+|-------------|--------------|--------|-------|
+| keypassword     | ethereum账户密码 | string | "111" |
+
+
+下面详细说明一下各项的用途：
+
+1. **keypassword** ：ethereum账户密码，若未设置密码也可以不配置。
+
+## Xuperchain
+如果您想进行Fabric的测试，请先阅读此手册。
+例如，在`benchmark/xuperchain/evmContract`测试用例中。
+### 账户
+至少需要配置一个有可使用代币的账户在main路径下，例如`benchmark/xuperchain/evmContract/xuperchain/keystore/main`。
+账户文件需为xuperchain生成的账户文件，且在配置时需要分开路径，main路径下放置主账户文件，若需要配置其余账户，则需类似main路径，配置为不同路径。
+
+### 网络连接
+请配置部署的xuperchain网络的ip以及端口在`benchmark/xuperchain/evmContract/xuperchain/xuperchain.toml`
+例如：
+```
+[rpc]
+node = "127.0.0.1"
+port = "37101"
+```
+
+### 合约
+当前适配合约支持go以及evm合约，请通过文件路径指明合约类型，例如`benchmark/xuperchain/evmContract/contract/evm`中最后的evm路径。
+
+#### EVM
+如果您需要部署的合约为evm，请将编译后的abi以及bin文件在`benchmark/xuperchain/evmContract/contract/evm`路径下，solidity文件为可选。
+
+#### GO
+如果您需要部署的合约为evm，请将go合约编译后的文件在例如`benchmark/xuperchain/goContract/contract/go`路径下，go文件为可选。
+
+编译合约请参考 [here](https://www.bookstack.cn/read/XuperChain-5.1-zh/ee1cca974bbc0699.md).
+
+
+### 注意项
+
+此处为使用xuperchain测试的一些注意项。
+
+#### UTXO模型
+如果在transfer测试时使用同一账户作为FROM以及TO账户，极有可能会导致交易失败。因此，您可以在client.options下配置instant项，设置在压测前初始化的测试账户数量，初始化时会预先为测试账户转入一定的代币。具体的instant使用说明参考下文client.options栏。
+
+#### 转账测试脚本
+转账测试中的FROM和TO账户都可以配置为空。若FROM为空，main账户则作为FROM账户；若TO为空且配置instant项，则会从其中随机选择一个账户作为TO账户，若TO为空且为配置instant，则会生成一个账户作为TO账户。
+若设置FROM与TO账户，但为无效账户，则与未配置相同效果。
+由于xuperchain本身但设置，转账数量Amount必须大于0。
+#### 合约调用参数
+
+合约调用时参数必须成对设置，参考xuperchain官方合约使用文档，例如：
+```lua
+local case = testcase.new()
+
+function case:Run()
+    local result = self.blockchain:Invoke({
+        func = "Increase",
+        args = {{"creator","test"},{"key","test"}},
+        -- Since the args parameter of the xuperchain contract call is in map[string]string format
+    return result
+end
+return case
+```
+### client.options
+| 参数名     | 概述        | 类型     | 实例 |
+|---------|-----------|--------|----|
+| instant | 初始化预设账户数量 | number | 10 |
+
+
+下面详细说明一下各项的用途：
+
+1. **instant** ：设置在压测前初始化的测试账户数量，初始化时会预先为测试账户转入一定的代币，供转账测试使用，可提高交易成功率。若设置数量较大，在初始化时可能需要时间相对较长，请耐心等待。
+
+
+# 第五章 使用示例
 
 ## 单台压力机测试
 
@@ -812,28 +996,31 @@ worker启动后可以看到如下命令行提示：
 
 ```text
 [engine]
-rate = 10
-duration = "20s"
-cap = 10
+rate = 20                            # 速率
+duration = "20s"                     # 持续时间
+cap = 10                             # 客户端虚拟机数量
+instant = 5                          # 每个批次发的交易数
+wait = "5ms"                         # 获取cap最大等待时间
 
 [client]
 script = "benchmark/local/script.lua"  # 脚本
-type = "flato"                         # 区块链类型
+type = "hyperchain"                    # 区块链类型
 config = "benchmark/local/hyperchain"  # 区块链SDK配置路径
 contract = "benchmark/local/contract"  # 合约目录路径
-args = []                              # 合约参数路径
+plugin = "hyperchain.so"               # 插件路径
 
 [client.options] # 客户端选项
+request = "rpc"
 ```
 
 local的文件目录结构如下：
 
 ```text
 local
-|_hyperchain  # hyperchain的网络配置目录
-| |_hpc.toml  # hyperchain gosdk对应的网络配置文件
-|_script.lua  # 测试脚本
-|_config.toml # 压测相关配置
+├── hyperchain  # hyperchain的网络配置目录
+│   └── hpc.toml  # hyperchain gosdk对应的网络配置文件
+├── script.lua  # 测试脚本
+└── config.toml # 压测相关配置
 ```
 
 使用start子命令开始压力测试：
@@ -879,17 +1066,20 @@ hyperbench worker -p 8081
 [engine]
 rate = 20                            # 速率
 duration = "20s"                     # 持续时间
-cap = 20                             # 客户端虚拟机数量
+cap = 10                             # 客户端虚拟机数量
+instant = 5                          # 每个批次发的交易数
+wait = "5ms"                         # 获取cap最大等待时间
 urls = ["172.0.1.10:8081", "172.0.1.11:8081"]                 # 若不设置或者长度为0则在本地启动worker
 
 [client]
 script = "benchmark/remote-evm/script.lua"  # 脚本
-type = "flato"                          # 区块链类型
+type = "flato"                              # 区块链类型
 config = "benchmark/remote-evm/hyperchain"  # 区块链SDK配置路径
 contract = "benchmark/remote-evm/contract"  # 合约目录路径
-args = []                               # 合约参数路径
+plugin = "hyperchain.so"                    # 插件路径
 
 [client.options] # 客户端选项
+request = "rpc"
 
 ```
 
@@ -897,16 +1087,15 @@ remote-evm的文件目录结构如下：
 
 ```text
 remote-evm
-|_contract                       # 合约目录
-| |_README.md               
-| |_evm                          # 具体合约类型相关目录
-| | |_source_solc_SetHash.bin    # 合约bin文件
-| | |_source_solc_SetHash.solc   # 合约源文件
-| | |_source_solc_SetHash.abi    # 合约abi文件
-|_hyperchain                     # hyperchain的网络配置目录
-| |_hpc.toml                     # hyperchain gosdk对应的网络配置文件
-|_script.lua                     # 测试脚本
-|_config.toml                    # 压测相关配置
+├── contract                         # 合约目录
+│   ├── evm                          # 具体合约类型相关目录
+│   │   ├── source_solc_SetHash.bin  # 合约bin文件
+│   │   ├── source_solc_SetHash.solc # 合约源文件
+│   │   └── source_solc_SetHash.abi  # 合约abi文件
+├── hyperchain                       # hyperchain的网络配置目录
+│   └── hpc.toml                     # hyperchain gosdk对应的网络配置文件
+├── script.lua                       # 测试脚本
+└── config.toml                      # 压测相关配置
 ```
 
 在master上使用start子命令开始压力测试：
@@ -920,4 +1109,3 @@ hyperbench start benchmark/remote-evm
 ```text
 [ctrl][NOTIC] 14:17:58.707 controller.go:113 finish 
 ```
-
