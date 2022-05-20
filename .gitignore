@@ -17,7 +17,6 @@ logs/*
 db/*
 keystore/*
 debug
-**/go.sum
 **/*.log
 **/*.db
 **/*.csv
