@@ -2,6 +2,8 @@
 rate = 10                            # 速率
 duration = "30s"                     # 持续时间
 cap = 5                              # 客户端虚拟机数量
+instant=5                            # 每个批次发的交易数
+wait="0s"                            # 获取cap最大等待时间
 
 [client]
 script = "benchmark/hyperchain/extraID/script.lua"  # 脚本
@@ -12,3 +14,4 @@ plugin = "./hyperchain.so"                          # 插件路径
 
 [client.options] # 客户端选项
 sign = "ECDSA"
+request="rpc"

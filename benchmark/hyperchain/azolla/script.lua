@@ -1,12 +1,12 @@
 local nonce = 0
 local case = testcase.new()
 function case:BeforeDeploy()
-    self.blockchain:option({nonce=0})
+    self.blockchain:Option({nonce=0})
 end
 
 function case:Run()
     -- transfer
-    self.blockchain:option({nonce=nonce})
+    self.blockchain:Option({nonce=nonce})
     local result = self.blockchain:Transfer({
         from="random0",                   -- random account `random0`
         to="0",                         -- account in keystore

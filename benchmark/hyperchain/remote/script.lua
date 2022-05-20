@@ -5,9 +5,8 @@ function case:Run()
         from = "0",
         to = "1",
         amount = 0,
-        extra = tostring(case.index.tx),
+        extra = tostring(case.index.Tx),
     })
-    print(case.index.worker, case.index.tx, ret.status)
     return ret
 end
 

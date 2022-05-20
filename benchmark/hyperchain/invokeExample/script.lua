@@ -4,10 +4,10 @@ function case:Run()
     index = index + 1
     local result = self.blockchain:Invoke({
         func = "setHash",
-        args = { tostring(self.index.tx), tostring(index) },
+        args = { tostring(self.index.Tx), tostring(index) },
     })
-    self.blockchain:Confirm(result)
-    print(result.Ret[1])
+    result=self.blockchain:Confirm(result)
+    --print(result.Status)
     return result
 end
 return case
