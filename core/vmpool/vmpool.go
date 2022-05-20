@@ -2,6 +2,7 @@ package vmpool
 
 import (
 	fcom "github.com/hyperbench/hyperbench-common/common"
+	"time"
 
 	"path"
 	"strings"
@@ -29,16 +30,17 @@ type Pool interface {
 
 // PoolImpl implement Pool.
 type PoolImpl struct {
-	ch chan vm.VM
-	//len int64
-	cap int64
+	ch   chan vm.VM
+	wait time.Duration
+	cap  int64
 }
 
 // NewPoolImpl create PoolImpl.
-func NewPoolImpl(workerID int64, cap int64) (*PoolImpl, error) {
+func NewPoolImpl(workerID int64, cap int64, wait time.Duration) (*PoolImpl, error) {
 	p := &PoolImpl{
-		cap: cap,
-		ch:  make(chan vm.VM, cap),
+		cap:  cap,
+		wait: wait,
+		ch:   make(chan vm.VM, cap),
 	}
 
 	scriptPath := viper.GetString(fcom.ClientScriptPath)
@@ -77,10 +79,12 @@ func (p *PoolImpl) Close() {
 // Pop gets a vm.VM from Pool concurrent-safely
 // if it's implement in no-block way, it may return nil.
 func (p *PoolImpl) Pop() (worker vm.VM) {
+	timer := time.NewTimer(p.wait)
+	defer timer.Stop()
 	select {
 	case worker = <-p.ch:
 		return
-	default:
+	case <-timer.C:
 		return
 	}
 }

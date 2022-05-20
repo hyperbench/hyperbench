@@ -45,15 +45,15 @@ type workerClient struct {
 
 // ControllerImpl is the implement of Controller
 type ControllerImpl struct {
-	master        master.Master
-	workerClients []*workerClient
-	recorder      recorder.Recorder
-	reportChan    chan fcom.Report
-	curCollector  collector.Collector
-	sumCollector  collector.Collector
-	logger        *logging.Logger
-	start         int64
-	end           int64
+	master         master.Master
+	workerClients  []*workerClient
+	recorder       recorder.Recorder
+	reportChan     chan fcom.Report
+	curCollector   collector.Collector
+	sumCollector   collector.Collector
+	logger         *logging.Logger
+	startChainInfo *fcom.ChainInfo
+	endChainInfo   *fcom.ChainInfo
 }
 
 // NewController create Controller.
@@ -135,12 +135,12 @@ func (l *ControllerImpl) Run() (err error) {
 	}
 	// run all workers
 	duration := viper.GetDuration(fcom.EngineDurationPath)
-	l.start = time.Now().UnixNano()
+	l.startChainInfo, err = l.master.LogStatus()
 	tick := time.NewTicker(duration)
 	go func() {
 		for {
 			<-tick.C
-			l.end, err = l.master.LogStatus()
+			l.endChainInfo, err = l.master.LogStatus()
 			if err != nil {
 				l.logger.Error(err)
 			}
@@ -164,7 +164,7 @@ func (l *ControllerImpl) Run() (err error) {
 	for _, w := range l.workerClients {
 		w.worker.AfterRun()
 	}
-	sd, err := l.master.Statistic(l.start, l.end)
+	sd, err := l.master.Statistic(l.startChainInfo, l.endChainInfo)
 	if err != nil {
 		l.logger.Notice(err)
 	}
@@ -177,7 +177,7 @@ func (l *ControllerImpl) Run() (err error) {
 		}
 		sd.MissedTx = totalMissed
 		sd.SentTx = totalSent
-		sd.Tps = float64(totalSent) * 1e9 / float64(duration)
+		sd.Tps = float64(totalSent) * float64(time.Second) / float64(duration)
 		l.logStatisticData(sd)
 	}
 

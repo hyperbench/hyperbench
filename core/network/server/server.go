@@ -1,16 +1,15 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
-	fcom "github.com/hyperbench/hyperbench-common/common"
-
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 
+	fcom "github.com/hyperbench/hyperbench-common/common"
+
+	"github.com/gin-gonic/gin"
 	"github.com/hyperbench/hyperbench/core/controller/worker"
 	"github.com/hyperbench/hyperbench/core/network"
 	"github.com/mholt/archiver/v3"
@@ -27,9 +26,8 @@ type Server struct {
 	nonce        int
 	nLock        sync.RWMutex
 	workerHandle worker.Worker
-
-	fp    string
-	index int
+	fp           string
+	index        int
 }
 
 const (
@@ -85,27 +83,27 @@ func (s *Server) Start() error {
 			c.String(http.StatusUnauthorized, "busy")
 			return
 		}
-
-		f, err := c.FormFile("file")
+		dir, _ := c.GetPostForm(network.ConfigPath)
+		f, err := c.FormFile(network.FileName)
 		if err != nil {
 			s.logger.Error("need file")
 			c.String(http.StatusNotAcceptable, "need file")
 			return
 		}
-
-		s.removeBenchmark(f.Filename)
+		s.fp = f.Filename[0 : strings.LastIndex(f.Filename, "/")+1]
+		// clear benchmark path for upload
+		s.removeBenchmark(s.fp)
+		s.createBenchmark(s.fp)
 		s.logger.Noticef("upload %v", f.Filename)
-
-		s.fp = s.getFilePath(f.Filename)
-		s.createBenchmark()
-		err = c.SaveUploadedFile(f, s.fp)
+		err = c.SaveUploadedFile(f, f.Filename)
 		if err != nil {
 			s.logger.Error("can not save file")
 			c.String(http.StatusNotAcceptable, "can not save file")
 			return
 		}
-		s.logger.Notice("fp", s.fp)
-		err = archiver.Unarchive(s.fp, benchmarkPath)
+
+		s.logger.Notice("fp", f.Filename)
+		err = archiver.Unarchive(f.Filename, s.fp)
 		if err != nil {
 			if strings.Contains(err.Error(), "file already exists") {
 				s.logger.Errorf("can not open file: %v", err)
@@ -115,11 +113,11 @@ func (s *Server) Start() error {
 				return
 			}
 		}
-		_ = os.RemoveAll(s.fp)
-		s.fp = strings.TrimSuffix(s.fp, ".tar.gz")
-		s.logger.Notice(f.Filename)
-
+		s.removeBenchmark(f.Filename)
 		viper.AddConfigPath(s.fp)
+		if dir != "" {
+			viper.SetConfigFile(dir)
+		}
 		err = viper.ReadInConfig()
 		if err != nil {
 			s.logger.Errorf("can not read in config")
@@ -161,14 +159,16 @@ func (s *Server) Start() error {
 
 		s.workerHandle, err = worker.NewLocalWorker(worker.LocalWorkerConfig{
 			Index:    int64(s.index),
+			Instant:  int64(viper.GetInt(fcom.EngineInstantPath) / l),
+			Wait:     viper.GetDuration(fcom.EngineWaitPath),
 			Cap:      int64(viper.GetInt(fcom.EngineCapPath) / l),
 			Rate:     int64(viper.GetInt(fcom.EngineRatePath) / l),
 			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 
 		if err != nil {
-			s.logger.Error("create worker error")
-			c.String(http.StatusNotAcceptable, "create worker error")
+			s.logger.Error("create worker error: %v", err)
+			c.String(http.StatusNotAcceptable, "create worker error: %v", err)
 			return
 		}
 	})
@@ -338,22 +338,13 @@ func (s *Server) checkNonce(c *gin.Context) bool {
 	return i == s.nonce
 }
 
-const benchmarkPath = "./benchmark"
-
-func (s *Server) getFilePath(name ...string) string {
-	fp := make([]string, len(name)+1)
-	fp[0] = "."
-	copy(fp[1:], name)
-	return filepath.Join(fp...)
-}
-
-func (s *Server) createBenchmark() {
-	_, err := os.Stat(benchmarkPath)
+func (s *Server) createBenchmark(filename string) {
+	_, err := os.Stat(filename)
 	if err != nil && !os.IsExist(err) {
-		_ = os.MkdirAll(benchmarkPath, 0777)
+		_ = os.MkdirAll(filename, 0777)
 	}
 }
 
 func (s *Server) removeBenchmark(fileName string) {
-	_ = os.Remove(fileName)
+	_ = os.RemoveAll(fileName)
 }

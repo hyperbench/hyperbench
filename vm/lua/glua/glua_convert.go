@@ -110,6 +110,20 @@ func go2Lua(L *lua.LState, value interface{}) lua.LValue {
 		return lua.LNumber(converted)
 	case string:
 		return lua.LString(converted)
+	case uint8:
+		return lua.LNumber(converted)
+	case []uint8:
+		arr := L.CreateTable(len(converted), 0)
+		for _, item := range converted {
+			arr.Append(go2Lua(L, item))
+		}
+		return arr
+	case [3]uint8:
+		arr := L.CreateTable(len(converted), 0)
+		for _, item := range converted {
+			arr.Append(go2Lua(L, item))
+		}
+		return arr
 	case []interface{}:
 		arr := L.CreateTable(len(converted), 0)
 		for _, item := range converted {

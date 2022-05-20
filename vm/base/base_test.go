@@ -29,7 +29,7 @@ func TestBaseVm(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, bs)
 
-	res, err := base.Statistic(1, 1)
+	res, err := base.Statistic(nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 

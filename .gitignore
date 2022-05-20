@@ -2,7 +2,7 @@
 .idea
 agile
 hyperbench
-hyperbench
+filesystem-packr.go
 result.html
 detail.js
 *.[oa]

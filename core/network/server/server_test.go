@@ -39,6 +39,8 @@ func TestServer(t *testing.T) {
 	m["engine.rate"] = 1
 	m["engine.duration"] = 5
 	m["engine.cap"] = 1
+	m["engine.instant"] = 1
+	m["engine.wait"] = 0
 	viper.MergeConfigMap(m)
 
 	err = cli.TestsetNonce()
