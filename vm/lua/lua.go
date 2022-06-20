@@ -2,14 +2,13 @@ package lua
 
 import (
 	"errors"
-	"github.com/hyperbench/hyperbench/vm/lua/glua"
-
 	base2 "github.com/hyperbench/hyperbench-common/base"
 	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/hyperbench/hyperbench/plugins/blockchain"
 	idex "github.com/hyperbench/hyperbench/plugins/index"
 	"github.com/hyperbench/hyperbench/plugins/toolkit"
 	"github.com/hyperbench/hyperbench/vm/base"
+	"github.com/hyperbench/hyperbench/vm/lua/glua"
 	"github.com/spf13/viper"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -105,7 +104,7 @@ func (v *VM) injectTestcaseBase() {
 		return 0
 	}
 	var result lua.LGFunction = func(state *lua.LState) int {
-		state.Push(glua.NewResultLValue(state, &fcom.Result{}))
+		state.Push(glua.Go2Lua(state, &fcom.Result{}))
 		return 1
 	}
 
@@ -224,15 +223,13 @@ func (v *VM) Run(ctx fcom.TxContext) (*fcom.Result, error) {
 	}
 	val := v.vm.Get(-1)
 	v.vm.Pop(1)
-	// todo  replace Result -> Lua.UserData
-	ud, ok := val.(*lua.LTable)
+	ud, ok := val.(*lua.LUserData)
 	if !ok {
 		return nil, errors.New("returned val is not user data")
 	}
-	res := &fcom.Result{}
-	err = glua.TableLua2GoStruct(ud, res)
-	if err != nil {
-		return nil, err
+	res, ok := ud.Value.(*fcom.Result)
+	if !ok {
+		return nil, errors.New("returned user data is not result")
 	}
 	return res, nil
 }
@@ -273,10 +270,9 @@ func (v *VM) setPlugins(table *lua.LTable) (err error) {
 		return err
 	}
 
-	// todo: register the plugins manually instead of luar's reflection to optimize performance
-	lClient := glua.NewClientLValue(v.vm, v.client)
-	lToolKit := glua.NewToolKitLValue(v.vm, toolkit.NewToolKit())
-	lIndex := glua.NewLIndexLValue(v.vm, v.index)
+	lClient := glua.Go2Lua(v.vm, v.client)
+	lToolKit := glua.Go2Lua(v.vm, toolkit.NewToolKit())
+	lIndex := glua.Go2Lua(v.vm, v.index)
 	v.vm.SetField(table, client, lClient)
 	v.vm.SetField(table, tool, lToolKit)
 	v.vm.SetField(table, index, lIndex)
