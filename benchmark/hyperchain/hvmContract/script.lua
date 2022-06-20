@@ -8,8 +8,8 @@ function case:BeforeRun()
 end
 function case:Run()
     local result = case.blockchain:Invoke({
-            func = "setHash",
-            args = { "key",
+            Func = "setHash",
+            Args = { "key",
                     "value",
             }
         })

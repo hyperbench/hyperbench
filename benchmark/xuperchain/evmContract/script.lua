@@ -1,8 +1,8 @@
 local case = testcase.new()
 function case:Run()
     local result = self.blockchain:Invoke({
-        func = "increase",
-        args = {{"key","test"}},
+        Func = "increase",
+        Args = {{"key","test"}},
     })
     --self.blockchain:Confirm(result)
     return result
