@@ -6,16 +6,16 @@ function case:BeforeGet()
     -- prepare account balance
     for key, value in ipairs(accountStrings) do
         self.blockchain:Invoke({
-            func = "com.hpc.sbank.invoke.IssueInvoke",
-            args = { value, "1000000000" }
+            Func = "com.hpc.sbank.invoke.IssueInvoke",
+            Args = { value, "1000000000" }
         })
     end
 end
 
 function case:Run()
     local result = self.blockchain:Invoke({
-        func = "com.hpc.sbank.invoke.TransferInvoke",
-        args = { accountStrings[idx % 10],
+        Func = "com.hpc.sbank.invoke.TransferInvoke",
+        Args = { accountStrings[idx % 10],
                  accountStrings[(idx + 1) % 10],
                  "100",
         }

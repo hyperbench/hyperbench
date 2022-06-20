@@ -2,12 +2,12 @@ local case = testcase.new()
 
 function case:Run()
     local ret = case.blockchain:Transfer({
-        from = "0",
-        to = "1",
-        amount = 0,
-        extra = tostring(case.index.tx),
+        From = "0",
+        To = "1",
+        Amount = 0,
+        Extra = tostring(case.index.Tx),
     })
-    print(case.index.worker, case.index.tx, ret.status)
+    print(case.index.Worker, case.index.Tx, ret.Status)
     return ret
 end
 

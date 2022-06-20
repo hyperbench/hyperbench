@@ -5,12 +5,12 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint8",
-            args = { p1, p2, p3 },
+            Func = "typeUint8",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
-        print(ret.status)
+        print(ret.Status)
         print(result[1])   -- 1
         print(result[2][1], result[2][2]) -- 2, 2
         print(result[3][1], result[3][2], result[3][3]) -- 3, 3, 3
@@ -23,12 +23,12 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint16",
-            args = { p1, p2, p3 },
+            Func = "typeUint16",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
-        print(ret.status)
+        print(ret.Status)
         print(result[1])   -- 1
         print(result[2][1], result[2][2]) -- 2, 2
         print(result[3][1], result[3][2], result[3][3]) -- 3, 3, 3
@@ -40,8 +40,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint32",
-            args = {p1, p2, p3 },
+            Func = "typeUint32",
+            Args = {p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -56,8 +56,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint64",
-            args = { p1, p2, p3 },
+            Func = "typeUint64",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -72,8 +72,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint128",
-            args = { p1, p2, p3 },
+            Func = "typeUint128",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -88,8 +88,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeUint256",
-            args = { p1, p2, p3 },
+            Func = "typeUint256",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -104,8 +104,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt8",
-            args = { p1, p2, p3 },
+            Func = "typeInt8",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -120,8 +120,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt16",
-            args = { p1, p2, p3 },
+            Func = "typeInt16",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -136,8 +136,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt32",
-            args = { p1, p2, p3 },
+            Func = "typeInt32",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -152,8 +152,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt64",
-            args = { p1, p2, p3 },
+            Func = "typeInt64",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -168,8 +168,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt128",
-            args = { p1, p2, p3 },
+            Func = "typeInt128",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -184,8 +184,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeInt256",
-            args = { p1, p2, p3 },
+            Func = "typeInt256",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -200,8 +200,8 @@ local switch = {
         local p2 = { "2", "2" }
         local p3 = { "3", "3", "3" }
         local ret = self.blockchain:Invoke({
-            func = "typeBytes1",
-            args = { p1, p2, p3 },
+            Func = "typeBytes1",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -217,8 +217,8 @@ local switch = {
         local p2 = { "22", "22" }
         local p3 = { "33", "33", "33" }
         local ret = self.blockchain:Invoke({
-            func = "typeBytes2",
-            args = { p1, p2, p3 },
+            Func = "typeBytes2",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -233,8 +233,8 @@ local switch = {
         local p2 = { "2222222", "2222222" }
         local p3 = { "3333333", "3333333", "3333333" }
         local ret = self.blockchain:Invoke({
-            func = "typeBytes7",
-            args = { p1, p2, p3 },
+            Func = "typeBytes7",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -249,8 +249,8 @@ local switch = {
         local p2 = { "2222222", "2222222" }
         local p3 = { "3333333", "3333333", "3333333" }
         local ret = self.blockchain:Invoke({
-            func = "typeBytes24",
-            args = { p1, p2, p3 },
+            Func = "typeBytes24",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -265,8 +265,8 @@ local switch = {
         local p2 = { "2222222", "2222222" }
         local p3 = { "3333333", "3333333", "3333333" }
         local ret = self.blockchain:Invoke({
-            func = "typeBytes32",
-            args = { p1, p2, p3 },
+            Func = "typeBytes32",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -281,8 +281,8 @@ local switch = {
         local p2 = { "true", "false" }
         local p3 = { "false", "true", "false" }
         local ret = self.blockchain:Invoke({
-            func = "typeBool",
-            args = { p1, p2, p3 },
+            Func = "typeBool",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -297,8 +297,8 @@ local switch = {
         local p2 = { "123123", "123123" }
         local p3 = { "123123", "123123", "123123" }
         local ret = self.blockchain:Invoke({
-            func = "typeAddress",
-            args = { p1, p2, p3 },
+            Func = "typeAddress",
+            Args = { p1, p2, p3 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -311,8 +311,8 @@ local switch = {
         -- string
         local p1 = "test string"
         local ret = self.blockchain:Invoke({
-            func = "typeString",
-            args = { p1 },
+            Func = "typeString",
+            Args = { p1 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -323,8 +323,8 @@ local switch = {
         -- bytes
         local p1 = self.toolkit:Hex("test bytes") -- hex of "test bytes"
         local ret = self.blockchain:Invoke({
-            func = "typeBytes",
-            args = { p1 },
+            Func = "typeBytes",
+            Args = { p1 },
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
@@ -337,8 +337,8 @@ local switch = {
 local case = testcase.new()
 
 function case:Run()
-    local num = (case.index.tx) % 21
-    print("current index:", case.index.tx, "current switch:", num)
+    local num = (case.index.Tx) % 21
+    print("current index:", case.index.Tx, "current switch:", num)
     return switch[num](case)
 end
 

@@ -3,8 +3,8 @@ local case = testcase.new()
 function case:Run()
     index = index + 1
     local result = self.blockchain:Invoke({
-        func = "setHash",
-        args = { tostring(self.index.tx), tostring(index) },
+        Func = "setHash",
+        Args = { tostring(self.index.Tx), tostring(index) },
     })
     self.blockchain:Confirm(result)
     print(result.Ret[1])

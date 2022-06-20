@@ -20,8 +20,8 @@ function case:Run()
     local personMap = { { "person1", person1 }, { "person2", person2 } }
     local beanMap = { { "bean1", bean1 }, { "bean2", bean2 } }
     local result = self.blockchain:Invoke({
-        func="cn.hyperchain.contract.invoke.EasyInvoke",
-        args={
+        Func="cn.hyperchain.contract.invoke.EasyInvoke",
+        Args={
             aBool,
             aChar,
             aByte,
