@@ -126,7 +126,7 @@ func Test_blockchain(t *testing.T) {
 			result := &fcom.Result{}
 			err = TableLua2GoStruct(ret.(*lua.LTable), result)
 			assert.Nil(t, err)
-			assert.Equal(t, result, &fcom.Result{Label: "Confirm", UID: "UUID", BuildTime: 0, SendTime: 0, ConfirmTime: 0, WriteTime: 0, Status: "success", Ret: []interface{}{"Confirm", "Confirm"}})
+			assert.Equal(t, result, &fcom.Result{Label: "Confirm", UID: "UUID", BuildTime: 0, SendTime: 0, ConfirmTime: 0, WriteTime: 0, Status: "confirm", Ret: []interface{}{"Confirm", "Confirm"}})
 			assert.Equal(t, client.tempData[Transfer], fcom.Transfer{From: "123", To: "123", Amount: 1, Extra: "extra"})
 			assert.Equal(t, client.tempData[Option], []fcom.Option(nil))
 		}

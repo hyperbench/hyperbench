@@ -51,6 +51,11 @@ func (v *VMBase) LogStatus() (*fcom.ChainInfo, error) {
 	return nil, nil
 }
 
+// Verify check the relative time of transaction
+func (v *VMBase) Verify(*fcom.Result, ...fcom.Option) *fcom.Result {
+	return nil
+}
+
 // BeforeSet will call before set context.
 func (v *VMBase) BeforeSet() error {
 	return nil
