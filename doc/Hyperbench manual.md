@@ -311,6 +311,16 @@ recorder用来配置压力统计结果输出相关的配置。目前压力统计
 
 1. **dump** ：用于指定是否将log日志导出到文件。当没有指定值，或者指定的值为`false` 时，日志只在控制台输出，不导出到文件；当值为`true`时会将日志导出到文件。
 
+对于需求使用influxdb进行数据可视化输出，在recorder下有influxdb配置项，用于配置influxdb服务的url、数据库名、用户名及密码。
+需要配置`recorder.influxdb`配置项
+
+| 参数名      | 概述                     | 类型     | 实例                      |
+|----------|------------------------|--------|-------------------------|
+| url      | influxdb服务的url，包括ip与端口 | string | "http://127.0.0.1:8086" |
+| database | 指定influxdb内数据库名称       | string | "hyperbench"            |
+| username | 访问influxdb数据库的用户名      | string | "admin"                 |
+| password | 访问influxdb数据库的密码       | string | "admin"                 |
+
 ## 合约初始化
 
 系统会根据测试计划`config.toml`中`client.contract`项所指定的目录下的目录结构进行规则匹配，从而初始化测试所使用的合约，对于hyperchain的测试来说，初始化的优先级依次如下：
