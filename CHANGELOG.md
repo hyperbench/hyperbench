@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.2](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.1...v1.0.2) (2022-07-01)
+
+
+### Features
+
+* **doc:** close [#20](null/git.hyperchain.cn/hyperchain/hyperchain/issues/20) add development specification manual ([e4f7e28](/git.hyperchain.cn/hyperchain/hyperchain/commit/e4f7e28298262217be4300126cbb6111d0316729))
+
+
+### Bug Fixes
+
+* **benchmark&gomod:** fix hyperbench benchmark bug [#16](null/git.hyperchain.cn/hyperchain/hyperchain/issues/16) ([5627a24](/git.hyperchain.cn/hyperchain/hyperchain/commit/5627a24f4f0fe25cfc97c1518b5400337d2200c8))
+
 ### [1.0.1](/github.com/hyperbench/hyperbench/compare/v1.0.0...v1.0.1) (2022-05-20)
 
 
