@@ -10,7 +10,7 @@ local switch = {
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
-        print(ret.status)
+        print(ret.Status)
         print(result[1])   -- 1
         print(result[2][1], result[2][2]) -- 2, 2
         print(result[3][1], result[3][2], result[3][3]) -- 3, 3, 3
@@ -28,7 +28,7 @@ local switch = {
         })
         ret = self.blockchain:Confirm(ret)
         local result = ret.Ret
-        print(ret.status)
+        print(ret.Status)
         print(result[1])   -- 1
         print(result[2][1], result[2][2]) -- 2, 2
         print(result[3][1], result[3][2], result[3][3]) -- 3, 3, 3
@@ -337,8 +337,8 @@ local switch = {
 local case = testcase.new()
 
 function case:Run()
-    local num = (case.index.tx) % 21
-    print("current index:", case.index.tx, "current switch:", num)
+    local num = (case.index.Tx) % 21
+    print("current index:", case.index.Tx, "current switch:", num)
     return switch[num](case)
 end
 

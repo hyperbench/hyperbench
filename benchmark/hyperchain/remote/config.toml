@@ -2,7 +2,9 @@
 rate = 20                            # 速率
 duration = "20s"                     # 持续时间
 cap = 20                             # 客户端虚拟机数量
-urls = ["localhost:8080"]                 # 若不设置或者长度为0则在本地启动worker
+instant=10                           # 每个批次发的交易数
+wait="0s"                            # 获取cap最大等待时间
+urls = ["localhost:8085"]            # 若不设置或者长度为0则在本地启动worker
 
 [client]
 script = "benchmark/hyperchain/remote/script.lua"  # 脚本
@@ -12,5 +14,5 @@ contract = "benchmark/hyperchain/remote/contract"  # 合约目录路径
 plugin = "./hyperchain.so"                         # 插件路径
 
 [client.options] # 客户端选项
-
+request="rpc"
 

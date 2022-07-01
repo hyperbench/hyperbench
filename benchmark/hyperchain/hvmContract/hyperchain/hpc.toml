@@ -29,8 +29,6 @@ reConnectTime = 10000
     #发送一次,第二次轮询的次数
     secondPollingTimes = 50
 
-#not support yet
-#
 #[privacy]
 #    #send Tcert during the request or not
 #    sendTcert = false
@@ -49,6 +47,7 @@ reConnectTime = 10000
     tlsca = "certs/tls/tlsca.ca"
     tlspeerCert = "certs/tls/tls_peer.cert"
     tlspeerPriv = "certs/tls/tls_peer.priv"
+    tlsDomain = "hyperchain.cn"
 
 [log]
     #设置日志输出门槛
