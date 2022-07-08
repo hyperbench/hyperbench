@@ -58,6 +58,21 @@ func NewRecorder() Recorder {
 		}
 	}
 
+	// influxdb
+	if viper.IsSet(fcom.RecorderInflucDBPath) {
+		benchmark := viper.GetString(fcom.BenchmarkDirPath)
+		url := viper.GetString(fcom.InfluxDBUrlPath)
+		db := viper.GetString(fcom.InfluxDBDatabasePath)
+		uname := viper.GetString(fcom.InfluxDBUsernamePath)
+		pwd := viper.GetString(fcom.InfluxDBPasswordPath)
+		influxDB, err := newInfluxdb(benchmark, url, db, uname, pwd)
+		if err == nil {
+			ps = append(ps, influxDB)
+		} else {
+			logger.Errorf("int influxdb client error: %v", err)
+		}
+	}
+
 	return &baseRecorder{
 		ps: ps,
 	}

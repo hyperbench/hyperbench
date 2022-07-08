@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	fcom "github.com/hyperbench/hyperbench-common/common"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func TestRecorder(t *testing.T) {
-	viper.Set("recorder.csv", "")
+	viper.Set(fcom.RecorderCsvPath, "")
 	recorder := NewRecorder()
 	assert.NotNil(t, recorder)
 
@@ -99,4 +100,34 @@ func BenchmarkWrite(b *testing.B) {
 
 func TestLogTile(t *testing.T) {
 	newLogProcessor(fcom.GetLogger("test")).logTitle()
+}
+
+func TestInfluxdb(t *testing.T) {
+	t.Skip()
+	viper.Set(fcom.RecorderInflucDBPath, "")
+	viper.Set(fcom.BenchmarkDirPath, "http://172.22.66.159:8086")
+	viper.Set(fcom.InfluxDBUrlPath, "hyperbench")
+	viper.Set(fcom.InfluxDBDatabasePath, "admin")
+	viper.Set(fcom.InfluxDBUsernamePath, "configured")
+	viper.Set(fcom.InfluxDBPasswordPath, "user1")
+	recorder := NewRecorder()
+	assert.NotNil(t, recorder)
+	recorder.Process(fcom.Report{
+		Cur: &fcom.Data{
+			Results: []fcom.AggData{
+				{
+					Label:    "11",
+					Time:     time.Now().UnixNano(),
+					Duration: 1e10,
+					Num:      100,
+					Statuses: map[fcom.Status]int{
+						fcom.Success: 98,
+						fcom.Failure: 2,
+					},
+				},
+			},
+		},
+		Sum: &fcom.Data{},
+	})
+	recorder.Release()
 }
