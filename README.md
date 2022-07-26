@@ -19,8 +19,16 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 | v1.0.2             | v0.0.2                     |
 | v1.0.1             | v0.0.1                     |
 | v1.0.0             | v0.0.1-alpha               |
+## Attention
+It should be noted that the current system uses go-plugin, go-plugin only supports macOS and Linux systems, and Windows systems are not yet supported.
 ## Quick Start
-
+### install packr
+```bash
+# Go 1.16 and above
+go get -u github.com/gobuffalo/packr/v2/packr2
+# Go 1.15 and below
+go get -u github.com/gobuffalo/packr/packr2
+```
 ### Build Hyperbench from Source Code
 
 ```bash
@@ -88,7 +96,11 @@ bash deamon.sh
 cd $GOPATH/src/github.com/hyperbench/hyperbench
 hyperbench start benchmark/fabric/example
 ```
-
+### Possible problems
+You may encounter a similar issue where the main repository and plugins share different package versions due to automatic package version updates. This is required by go-plugin, there is no other way than to unify the version.
+```text
+[blockchain][ERROR] 10:37:45.853 blockchain.go:39 plugin failed: plugin.Open("./hyperchain"): plugin was built with a different version of package golang.org/x/sys/internal/unsafeheader
+```
 ## Contribution
 
 Thank you for considering to help out with the source code! No matter it's a system bug report, a new feature purposal, or code contributing, we're all huge welcome.
