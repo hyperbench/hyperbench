@@ -19,6 +19,6 @@ dump=false                  # 日志是否输出
 dir="./logs"                # 日志输出路径
 level="notice"              # 日志等级
 
-
-
-
+[verify]
+enable=true
+percentage=0.1

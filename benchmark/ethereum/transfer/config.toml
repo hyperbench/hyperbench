@@ -21,7 +21,6 @@ level="debug"
 [recorder.csv]
 dir="./csv"
 
-
-
-
-
+[verify]
+enable=true
+percentage=0.1

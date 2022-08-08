@@ -14,6 +14,7 @@ func newCommonResult(L *lua.LState, r *fcom.Result) lua.LValue {
 	resultTable.RawSetString("BuildTime", lua.LNumber(r.BuildTime))
 	resultTable.RawSetString("SendTime", lua.LNumber(r.SendTime))
 	resultTable.RawSetString("WriteTime", lua.LNumber(r.WriteTime))
+	resultTable.RawSetString("NodeBuildTime", lua.LNumber(r.WriteTime))
 	resultTable.RawSetString("Status", lua.LString(r.Status))
 	resultTable.RawSetString("Ret", go2Lua(L, r.Ret))
 	return resultTable

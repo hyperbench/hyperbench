@@ -17,3 +17,7 @@ plugin = "./fabric.so"                      # 插件路径
 channel = "mychannel"                       # channelId
 MSP = true                                  # MSP设置
 instant = 20                                # 初始账户数量
+
+[verify]
+enable=true
+percentage=0.1

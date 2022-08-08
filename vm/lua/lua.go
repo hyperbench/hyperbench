@@ -175,6 +175,11 @@ func (v *VM) LogStatus() (chainInfo *fcom.ChainInfo, err error) {
 	return v.client.LogStatus()
 }
 
+// Verify check the relative time of transaction
+func (v *VM) Verify(res *fcom.Result, ops ...fcom.Option) *fcom.Result {
+	return v.client.Verify(res)
+}
+
 // BeforeSet will call before set context.
 func (v *VM) BeforeSet() error {
 	fn := v.instance.RawGetString(beforeSet)

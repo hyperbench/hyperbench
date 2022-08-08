@@ -23,6 +23,9 @@ level="notice"              # 日志等级
 [recorder.csv]
 dir="./csv"                 # csv文件输出路径
 
+[verify]
+enable=true
+percentage=0.1
 
 
 
