@@ -64,7 +64,18 @@ func (chain *FakeChain) Confirm(rt *fcom.Result, ops ...fcom.Option) *fcom.Resul
 	return &fcom.Result{
 		Label:  "Confirm",
 		UID:    "UUID",
-		Status: fcom.Success,
+		Status: fcom.Confirm,
+		Ret:    []interface{}{"Confirm", "Confirm"},
+	}
+}
+
+func (chain *FakeChain) Verify(rt *fcom.Result, ops ...fcom.Option) *fcom.Result {
+	chain.tempData[Result] = rt
+	chain.tempData[Option] = ops
+	return &fcom.Result{
+		Label:  "Confirm",
+		UID:    "UUID",
+		Status: fcom.Confirm,
 		Ret:    []interface{}{"Confirm", "Confirm"},
 	}
 }

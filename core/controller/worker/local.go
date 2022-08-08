@@ -16,33 +16,40 @@ package worker
 
 import (
 	"context"
+	"math/rand"
+	"path"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	fcom "github.com/hyperbench/hyperbench-common/common"
-
 	"github.com/hyperbench/hyperbench/core/collector"
 	"github.com/hyperbench/hyperbench/core/engine"
 	"github.com/hyperbench/hyperbench/core/vmpool"
 	"github.com/hyperbench/hyperbench/plugins/blockchain"
 	"github.com/hyperbench/hyperbench/vm"
+	"github.com/hyperbench/hyperbench/vm/base"
+	"github.com/spf13/viper"
 )
 
 // LocalWorker is the local Worker implement
 type LocalWorker struct {
-	conf      LocalWorkerConfig
-	eg        engine.Engine
-	pool      vmpool.Pool
-	collector collector.Collector
-	idx       fcom.TxIndex
-	wg        sync.WaitGroup
-	ctx       context.Context
-	cancel    context.CancelFunc
-	resultCh  chan *fcom.Result
-	done      chan struct{}
-	colRet    chan collector.Collector
-	colReq    chan struct{}
+	conf           LocalWorkerConfig
+	eg             engine.Engine
+	pool           vmpool.Pool
+	collector      collector.Collector
+	idx            fcom.TxIndex
+	wg             sync.WaitGroup
+	ctx            context.Context
+	cancel         context.CancelFunc
+	resultCh       chan *fcom.Result
+	done           chan struct{}
+	colRet         chan collector.Collector
+	colReq         chan struct{}
+	txInterval     int64          // interval for sample ,every txInterval chose one tx randomly
+	verifyVM       vm.WorkerVM    // vm used for verification to make sure query from same node
+	verifyIndexMap map[int64]bool // store the sample result
 }
 
 // LocalWorkerConfig define the local worker need config.
@@ -60,11 +67,12 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	blockchain.InitPlugin()
 
 	localWorker := LocalWorker{
-		collector: collector.NewTDigestSummaryCollector(),
-		resultCh:  make(chan *fcom.Result, 1024),
-		done:      make(chan struct{}),
-		colReq:    make(chan struct{}),
-		colRet:    make(chan collector.Collector),
+		collector:      collector.NewTDigestSummaryCollector(),
+		resultCh:       make(chan *fcom.Result, 1024),
+		done:           make(chan struct{}),
+		colReq:         make(chan struct{}),
+		colRet:         make(chan collector.Collector),
+		verifyIndexMap: make(map[int64]bool),
 	}
 	// init engine
 	eg := engine.NewEngine(engine.BaseEngineConfig{
@@ -80,6 +88,37 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 		return nil, err
 	}
 
+	// init verification
+	var txInterval int64
+	verifyEnable := viper.GetBool(fcom.VerifyEnablePath)
+	if verifyEnable {
+		// calculate txInterval
+		samplePercentage := viper.GetFloat64(fcom.VerifyPercentagePath)
+
+		if samplePercentage <= 0 {
+			samplePercentage = 0.001
+		} else if samplePercentage > 1 {
+			samplePercentage = 1
+		}
+		txInterval = int64(1 / samplePercentage)
+		// init vm for verification
+		scriptPath := viper.GetString(fcom.ClientScriptPath)
+		vmType := strings.TrimPrefix(path.Ext(scriptPath), ".")
+		configBase := base.ConfigBase{
+			Path: scriptPath,
+			Ctx: fcom.VMContext{
+				WorkerIdx: config.Index,
+				VMIdx:     config.Cap,
+			},
+		}
+		verifyVM, err := vm.NewVM(vmType, configBase)
+		if err != nil {
+			return nil, err
+		}
+		localWorker.verifyVM = verifyVM
+		// sample transactions
+		localWorker.sample()
+	}
 	// init index
 	idx := fcom.TxIndex{
 		EngineIdx: config.Index,
@@ -93,6 +132,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	localWorker.idx = idx
 	localWorker.ctx = ctx
 	localWorker.cancel = cancel
+	localWorker.txInterval = txInterval
 
 	return &localWorker, nil
 }
@@ -154,7 +194,6 @@ func (l *LocalWorker) runCollector() {
 		close(l.done)
 		close(l.colRet)
 	}()
-
 	l.collector.Reset()
 	for {
 		select {
@@ -195,13 +234,17 @@ func (l *LocalWorker) asyncJob() {
 		// if worker can not get vm from pool, just shortcut
 		return
 	}
-
-	res, err := v.Run(fcom.TxContext{
+	txContext := fcom.TxContext{
 		Context: l.ctx,
 		TxIndex: l.atomicAddIndex(),
-	})
+	}
+	res, err := v.Run(txContext)
 	if err != nil {
 		return
+	}
+	// if enable verification and this tx is chosen, verify the tx
+	if l.txInterval > 0 && l.verifyIndexMap[txContext.TxIdx] {
+		l.verifyVM.Verify(res)
 	}
 	l.resultCh <- res
 }
@@ -227,4 +270,19 @@ func (l *LocalWorker) CheckoutCollector() (collector.Collector, bool, error) {
 // Done close the worker.
 func (l *LocalWorker) Done() chan struct{} {
 	return l.done
+}
+
+// sample chose indexes of transactions to be verified
+func (l *LocalWorker) sample() {
+	txNum, current := l.conf.Rate*int64(l.conf.Duration/time.Second), int64(0)
+
+	for current < txNum {
+		tmp := current + l.txInterval
+		if tmp > txNum {
+			tmp = txNum
+		}
+		index := current + rand.Int63n(tmp-current)
+		l.verifyIndexMap[index] = true
+		current = tmp
+	}
 }
