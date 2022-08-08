@@ -6,7 +6,7 @@ function case:Run()
         from = "0", -- account0 alias
         to = "1", -- account1 alias
         amount = 0,
-        extra = self.toolkit.RandStr(1024),
+        extra = self.toolkit.RandStr(self.toolkit,1024),
     })
     -- print(result:result()[1]) -- 0x0
     return result

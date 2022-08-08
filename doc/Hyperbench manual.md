@@ -1,7 +1,7 @@
 本文是hyperbench的入门手册，包含了最基本的安装、配置和使用。
 
 # 第一章 环境安装
-
+需要注意的是目前系统使用go-plugin，go-plugin只支持macOS以及Linux系统，Windows系统尚不支持。
 ## 编译安装-Go环境与Hyperbench
 
 Hyperbench基于Go语言开发，因此需要在系统中安装golang开发环境。安装方式主要有3种：
@@ -82,6 +82,15 @@ brew install go
 
 **注意编译需要要求go版本1.11+**
 
+安装packr二进制
+
+```text
+# Go 1.16及以上版本使用以下命令
+go get -u github.com/gobuffalo/packr/v2/packr2
+# Go 1.15及以下版本使用以下命令
+go get -u github.com/gobuffalo/packr/packr2
+```
+
 下载源码
 
 ```text
@@ -98,6 +107,7 @@ export GO111MODULE=on
 ```text
 make build
 # 此处出现packr缺失错误时，请确保packr的安装路径在您的环境目录下
+
 ```
 
 编译后会生成二进制文件`hyperbench`，可以按照说明进行运行，推荐将`hyperbench`放到`/usr/local/bin`或者`$GOPATH/bin`目录下，方便使用。
@@ -112,11 +122,15 @@ cd hyperbench-plugins/hyperchain
 # 编译插件,插件名称在配置阶段需要使用
 make build
 ```
-
+[注意]Hyperbench与Hyperbench-plugins须使用同一系统下的编译二进制，且使用统一go版本进行编译
 # 第二章 使用与配置
 
 第二章中的命令默认您已经将hyperbench安装到了`/usr/local/bin`或者`$GOPATH/bin`目录下了，如果您没有安装hyperbench，也可以将其当做一个普通的二进制文件使用`./hyperbench [cmd]`进行各种操作，此时必须确保在目录文件夹下含有hyperbench二进制文件。
 
+你可能会遇到类似的问题，由于包版本的自动更新导致主仓和插件的共用包版本不同。这是由于go-plugin要求的，除了统一版本没有别的办法。
+```text
+[blockchain][ERROR] 10:37:45.853 blockchain.go:39 plugin failed: plugin.Open("./hyperchain"): plugin was built with a different version of package golang.org/x/sys/internal/unsafeheader
+```
 ## 工作目录初始化
 
 在使用hyperbench时，需要使用一个独立的工作目录。所有hyperbench的操作都需要在工作目录（benchmark）同级目录下执行，不可以在目录之外或者是子目录中，否则会产生异常。您可以通过以下命令初始化出一个工作目录。
@@ -394,7 +408,7 @@ function case:Run()
         from = "0",  -- account中别名为0的账户为转账的from，以string形式入参
         to = "1", -- account中别名为1的账户为转账的to，以string形式入参
         amount = 0, -- 转账金额
-        extra = tostring(case.index.tx),-- 设置转账交易的extra字段，以string形式入参
+        extra = tostring(case.index.Tx),-- 设置转账交易的extra字段，以string形式入参
     })
     return ret
 end
@@ -410,7 +424,7 @@ local case = testcase.new()
 function case:Run()
     local ret = case.blockchain:Invoke({
         func="setHash", -- 调用的合约方法
-        args={tostring(case.index.tx),
+        args={tostring(case.index.Tx),
               tostring(case.index.worker)} -- 合约方法需要的参数列表。以string的形式入参
     })
     case.blockchain:Confirm(ret)
@@ -683,7 +697,7 @@ function case:Run()
         from = "0",
         to = "1",
         amount = 0,
-        extra = tostring(case.index.tx),
+        extra = tostring(case.index.Tx),
     })
     return ret
 end
@@ -802,7 +816,7 @@ worker启动后可以看到如下命令行提示：
 
 ### 网络连接
 
-hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网络连接配置文件在`hvmSBank/hyperchain/hyperchain.toml`路径。
+hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网络连接配置文件在`hvmSBank/hyperchain/hpc.toml`路径。
 
 ### 合约
 系统会根据测试计划`config.toml`中`client.contract`项所指定的目录下的目录结构进行规则匹配，从而初始化测试所使用的合约，对于hyperchain的测试来说，初始化的优先级依次如下：
@@ -835,7 +849,7 @@ hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网�
 | 参数名             | 概述                        | 类型     | 实例                                    |
 |-----------------|---------------------------| ------ | ------------------------------------- |
 | keystore        | 账户仓库路径                    | string | "benchmark/remote-evm/keystore/ecdsa" |
-| type            | 账户签名类型                    | string | "ECDSA"、"SM2"（默认ECDSA）                |
+| sign            | 账户签名类型                    | string | "ECDSA"、"SM2"（默认ECDSA）                |
 | request         | 交易连接类型，rpc或grpc，必需配置项     | string | "rpc"            |
 | crosschain      | 合约调用时是否使用跨链交易             | string | "true"                           |
 | simulate        | 是否使用simulate模式发送交易        | bool   | "false"                               |
@@ -846,7 +860,7 @@ hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网�
 
 1. **keystore** ：如果需要使用指定的账号，可以配置keystore，系统会读取keystore指向的目录下所有文件（不递归，只读取第一级文件），对于hyperchain，每个文件表示一个账号，文件名无所谓，但是文件内容必须是由hyperchain的go SDK生成的sign指定的类型的account json文件，否则无法正常识别。
 
-2. **type** ：系统会根据这个标识来判断使用哪种类型的账户进行交易的发送，对于hyperchain，目前支持sm2和ecdsa两种账户，对大小写不敏感。
+2. **sign** ：系统会根据这个标识来判断使用哪种类型的账户进行交易的发送，对于hyperchain，目前支持sm2和ecdsa两种账户，对大小写不敏感。
 
 3. **request** ：用于配置交易连接类型，rpc或grpc，必需配置项。有rpc和grpc的区别。
 
@@ -863,7 +877,7 @@ hyperchain详细配置方案请参见hyperchain的go sdk文档。Hyperchain网�
 例如，在`benchmark/fabric/Sacc`测试用例中。
 
 ### 合约
-再部署合约时，请将合约放置在正确未知，例如`benchmark/fabric/Sacc/contract`。在部署合约时，fabric go-sdk会自动将合约路径加上$GOPATH/src，所以在配置文件中配置合约路径时，请参考`benchmark/fabric/Sacc/config.toml`。
+在使用需要部署合约的用例前，请将合约放置在正确位置，例如`benchmark/fabric/Sacc/contract`。在部署合约时，fabric go-sdk会自动将合约路径加上$GOPATH/src，所以在配置文件中配置合约路径时，请参考`benchmark/fabric/Sacc/config.toml`。
 ### client.options
 | 参数名         | 概述                   | 类型     | 实例                                    |
 |-------------|----------------------| ------ | ------------------------------------- |
@@ -905,7 +919,6 @@ port = "8546"
 如果您需要部署合约，请将合约编译后的abi和bin文件放置于正确路径下，例如`benchmark/eth/invoke/contract`，solidity文件非必须。
 
 ### 注意项
-
 此处为使用ethereum压测时的一些注意项。
 
 #### NONCE值
@@ -992,7 +1005,7 @@ return case
 
 ## 单台压力机测试
 
-使用benchmark中的local测试用例，单机对flato进行压力测试，其config.toml的配置如下：
+使用benchmark中的local测试用例，单机对hyperchain进行压力测试，其config.toml的配置如下：
 
 ```text
 [engine]
@@ -1003,10 +1016,9 @@ instant = 5                          # 每个批次发的交易数
 wait = "5ms"                         # 获取cap最大等待时间
 
 [client]
-script = "benchmark/local/script.lua"  # 脚本
+script = "benchmark/hyperchain/local/script.lua"  # 脚本
 type = "hyperchain"                    # 区块链类型
-config = "benchmark/local/hyperchain"  # 区块链SDK配置路径
-contract = "benchmark/local/contract"  # 合约目录路径
+config = "benchmark/hyperchain/local/hyperchain"  # 区块链SDK配置路径
 plugin = "hyperchain.so"               # 插件路径
 
 [client.options] # 客户端选项
@@ -1026,7 +1038,7 @@ local
 使用start子命令开始压力测试：
 
 ```bash
-hyperbench start benchmark/local
+hyperbench start benchmark/hyperchain/local
 ```
 
 在start子命令运行完成后我们可以看到命令行提示如下：
@@ -1037,12 +1049,12 @@ hyperbench start benchmark/local
 
 ## 分布式压力机测试
 
-使用benchmark中的remote-evm测试用例，使用多台压力机对flato进行压力测试。
+使用benchmark中的remote-evm测试用例，使用多台压力机对hyperchain进行压力测试。
 
 例如，使用172.0.1.10、172.0.1.11、172.0.1.12三台服务器进行压力测试，其中172.0.1.10、172.0.1.11作为worker，172.0.1.12作为master控制整个压力测试。
 
-首先在172.0.1.10、172.0.1.11服务器的8081端口分别启动了一个worker。将hyperbench安装到172.0.1.10、172.0.1.11服务器上后，分别运行以下命令：
-
+首先在172.0.1.10、172.0.1.11服务器的8081端口分别启动了一个worker。将hyperbench与对应插件(例如hyperchain.so)安装到172.0.1.10、172.0.1.11服务器上后，分别运行以下命令：
+[注意]每个hyperbench二进制如需正常进行压力输出，都需要与适配的插件配合使用。且在使用分布式压测时，需要保证master以及每个worker都在不同的目录下启动。
 ```text
 hyperbench worker -p 8081
 ```
@@ -1072,10 +1084,10 @@ wait = "5ms"                         # 获取cap最大等待时间
 urls = ["172.0.1.10:8081", "172.0.1.11:8081"]                 # 若不设置或者长度为0则在本地启动worker
 
 [client]
-script = "benchmark/remote-evm/script.lua"  # 脚本
-type = "flato"                              # 区块链类型
-config = "benchmark/remote-evm/hyperchain"  # 区块链SDK配置路径
-contract = "benchmark/remote-evm/contract"  # 合约目录路径
+script = "benchmark/hyperchain/remote-evm/script.lua"  # 脚本
+type = "hyperchain"                              # 区块链类型
+config = "benchmark/hyperchain/remote-evm/hyperchain"  # 区块链SDK配置路径
+contract = "benchmark/hyperchain/remote-evm/contract"  # 合约目录路径
 plugin = "hyperchain.so"                    # 插件路径
 
 [client.options] # 客户端选项
@@ -1101,7 +1113,7 @@ remote-evm
 在master上使用start子命令开始压力测试：
 
 ```bash
-hyperbench start benchmark/remote-evm
+hyperbench start benchmark/hyperchain/remote-evm
 ```
 
 在start子命令运行完成后我们可以看到命令行提示如下：

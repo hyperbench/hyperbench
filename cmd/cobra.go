@@ -102,7 +102,7 @@ func initConfig() {
 }
 
 func initBenchmark(dir string) {
-	if !strings.HasSuffix(dir, "/") {
+	if !strings.HasSuffix(dir, "/") && !strings.HasSuffix(dir, "toml") {
 		dir = dir + "/"
 	}
 	// support for specifying configuration files or specifying test case directories

@@ -6,7 +6,7 @@ function case:Run()
     --print("run")
     index = index + 1
     local option
-    if self.index.tx % 2 == 0 then
+    if self.index.Tx % 2 == 0 then
         option = invoke
     else
         option = query
