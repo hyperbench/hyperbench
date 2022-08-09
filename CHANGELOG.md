@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.3](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.2...v1.0.3) (2022-08-09)
+
+
+### Features
+
+* **verify:** add transaction sampling verification [#17](null/git.hyperchain.cn/hyperchain/hyperchain/issues/17) ([bbcbd90](/git.hyperchain.cn/hyperchain/hyperchain/commit/bbcbd90442464d97ba8810fa36d0d49d77a4a31b))
+
+
+### Bug Fixes
+
+* **gomod&manual:** update version of golang.org/x/sys and golang.org/x/net, update manual ([2bfea78](/git.hyperchain.cn/hyperchain/hyperchain/commit/2bfea78c9daf703f69128fb4f9e543eeda60ee6e))
+* **network:** [#28](null/git.hyperchain.cn/hyperchain/hyperchain/issues/28) fix upload error since go 1.17 ([2919551](/git.hyperchain.cn/hyperchain/hyperchain/commit/2919551e37072bb4d5a8cc7b7641b39f4ad1126d))
+
 ### [1.0.2](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.1...v1.0.2) (2022-07-01)
 
 
