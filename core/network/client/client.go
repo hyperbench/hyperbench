@@ -173,7 +173,7 @@ func (c *Client) Do() error {
 	return c.callWithValues(do, network.DoPath, url.Values{nonce: {c.nonce}})
 }
 
-// Statistic get the number of sent and missed transactions
+// Statistics get the number of sent and missed transactions
 func (c *Client) Statistics() (int64, int64) {
 	var resp *http.Response
 	values := url.Values{nonce: {c.nonce}}
@@ -237,6 +237,8 @@ func (c *Client) upload() error {
 	_, _ = nonceWriter.Write([]byte(c.nonce))
 	dirWriter, _ := bodyWriter.CreateFormField(network.ConfigPath)
 	_, _ = dirWriter.Write([]byte(viper.GetString(fcom.BenchmarkConfigPath)))
+	filePathWriter, _ := bodyWriter.CreateFormField(network.FilePath)
+	_, _ = filePathWriter.Write([]byte(c.path))
 	fileWriter, _ := bodyWriter.CreateFormFile(network.FileName, c.path)
 
 	file, _ := os.Open(c.path)

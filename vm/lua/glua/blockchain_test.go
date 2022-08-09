@@ -68,7 +68,7 @@ func Test_blockchain(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, result, &fcom.Result{Label: "label", UID: "UUID", BuildTime: 0, SendTime: 0, ConfirmTime: 0, WriteTime: 0, Status: "success", Ret: []interface{}{"demo", "demo"}})
 			assert.Equal(t, client.tempData[Invoke], fcom.Invoke{"123", []interface{}{"123", "123"}})
-			assert.Equal(t, client.tempData[Option], []fcom.Option{fcom.Option{"aa": "aa"}, fcom.Option{"bb": "bb"}})
+			assert.Equal(t, client.tempData[Option], []fcom.Option{{"aa": "aa"}, {"bb": "bb"}})
 		}
 	})
 
@@ -159,7 +159,7 @@ func Test_blockchain(t *testing.T) {
 			assert.Nil(t, err)
 			assert.Equal(t, goRet, "nil")
 			assert.Equal(t, client.tempData[Query], fcom.Query{Func: "123", Args: []interface{}{"banana", "orange", "apple"}})
-			assert.Equal(t, client.tempData[Option], []fcom.Option{fcom.Option{"aa": "aaa"}, fcom.Option{"bb": "bbb"}})
+			assert.Equal(t, client.tempData[Option], []fcom.Option{{"aa": "aaa"}, {"bb": "bbb"}})
 		}
 	})
 

@@ -84,26 +84,31 @@ func (s *Server) Start() error {
 			return
 		}
 		dir, _ := c.GetPostForm(network.ConfigPath)
+		filePath, exist := c.GetPostForm(network.FilePath)
+		if !exist {
+			s.logger.Error("need filePath")
+			c.String(http.StatusNotAcceptable, "need filePath")
+			return
+		}
 		f, err := c.FormFile(network.FileName)
 		if err != nil {
 			s.logger.Error("need file")
 			c.String(http.StatusNotAcceptable, "need file")
 			return
 		}
-		s.fp = f.Filename[0 : strings.LastIndex(f.Filename, "/")+1]
+		s.fp = filePath[0 : strings.LastIndex(filePath, "/")+1]
 		// clear benchmark path for upload
 		s.removeBenchmark(s.fp)
 		s.createBenchmark(s.fp)
-		s.logger.Noticef("upload %v", f.Filename)
-		err = c.SaveUploadedFile(f, f.Filename)
+		s.logger.Noticef("upload %v", filePath)
+		err = c.SaveUploadedFile(f, filePath)
 		if err != nil {
 			s.logger.Error("can not save file")
 			c.String(http.StatusNotAcceptable, "can not save file")
 			return
 		}
 
-		s.logger.Notice("fp", f.Filename)
-		err = archiver.Unarchive(f.Filename, s.fp)
+		err = archiver.Unarchive(filePath, s.fp)
 		if err != nil {
 			if strings.Contains(err.Error(), "file already exists") {
 				s.logger.Errorf("can not open file: %v", err)

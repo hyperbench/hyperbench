@@ -21,7 +21,7 @@ func TestRecorder(t *testing.T) {
 	recorder.Process(fcom.Report{
 		Cur: &fcom.Data{
 			Results: []fcom.AggData{
-				fcom.AggData{
+				{
 					Label: "11",
 				},
 			},
