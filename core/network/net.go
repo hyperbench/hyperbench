@@ -30,6 +30,8 @@ const (
 	ConfigPath = "configDir"
 	// FileName key of file
 	FileName = "file"
+	// FilePath key of file path
+	FilePath = "filepath"
 )
 
 // Bytes2Hex convert bytes to hex.
