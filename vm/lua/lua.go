@@ -3,6 +3,7 @@ package lua
 import (
 	"errors"
 	"github.com/hyperbench/hyperbench/vm/lua/glua"
+	errors2 "github.com/pkg/errors"
 
 	base2 "github.com/hyperbench/hyperbench-common/base"
 	fcom "github.com/hyperbench/hyperbench-common/common"
@@ -55,7 +56,7 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	// load script
 	err = vm.vm.DoFile(base.Path)
 	if err != nil {
-		return nil, err
+		return nil, errors2.Wrap(err,"load script fail")
 	}
 
 	// get test
@@ -112,7 +113,10 @@ func (v *VM) injectTestcaseBase() {
 	v.vm.SetField(mt, lNew, v.vm.NewFunction(func(state *lua.LState) int {
 		table := v.vm.NewTable()
 		v.vm.SetMetatable(table, v.vm.GetMetatable(lua.LString(testcase)))
-		_ = v.setPlugins(table)
+		err := v.setPlugins(table)
+		if err != nil{
+			v.Logger.Errorf("setPlugins fail:%v", err)
+		}
 		v.vm.Push(table)
 		return 1
 	}))
