@@ -6,6 +6,25 @@ import (
 	"strconv"
 )
 
+// RemoteStatistic2CSV append data's fields to base,
+func RemoteStatistic2CSV(base []string, data *fcom.RemoteStatistic) []string {
+	if base == nil {
+		base = make([]string, 0, 30)
+	}
+	base = append(base,
+		"statistic",
+		i2s(data.Start),
+		i2s(data.End),
+		i2s(data.BlockNum),
+		i2s(data.Tps),
+		i2s(data.CTps),
+		i2s(data.Bps),
+		i2s(data.SentTx),
+		i2s(data.MissedTx),
+		i2s(data.Tps))
+	return base
+}
+
 // AggData2CSV append data's fields to base,
 func AggData2CSV(base []string, t fcom.DataType, data fcom.AggData) []string {
 	if base == nil {

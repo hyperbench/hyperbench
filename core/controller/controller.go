@@ -159,7 +159,6 @@ func (l *ControllerImpl) Run() (err error) {
 		l.recorder.Process(report)
 	}
 
-	l.recorder.Release()
 	// afterRun
 	for _, w := range l.workerClients {
 		w.worker.AfterRun()
@@ -178,28 +177,14 @@ func (l *ControllerImpl) Run() (err error) {
 		sd.MissedTx = totalMissed
 		sd.SentTx = totalSent
 		sd.Tps = float64(totalSent) * float64(time.Second) / float64(duration)
-		l.logStatisticData(sd)
+		l.master.LogStatus()
+		l.recorder.ProcessStatistic(sd)
 	}
+
+	l.recorder.Release()
 
 	l.logger.Notice("finish")
 	return nil
-}
-
-func (l *ControllerImpl) logStatisticData(sd *fcom.RemoteStatistic) {
-	l.logger.Notice("")
-	l.logger.Notice("\t\tSent\t\tMissed\t\tTotal\t\tTps")
-	l.logger.Noticef("\t\t%v\t\t%v\t\t%v\t\t%.1f", sd.SentTx, sd.MissedTx, sd.SentTx+sd.MissedTx, sd.Tps)
-	l.logger.Notice("")
-	l.logger.Notice("       From        \t         To           \tBlk\tTx\tCTps\tBps")
-	l.logger.Noticef("%s\t%s\t%v\t%v\t%.1f\t%.1f",
-		time.Unix(0, sd.Start).Format("2006-01-02 15:04:05"),
-		time.Unix(0, sd.End).Format("2006-01-02 15:04:05"),
-		sd.BlockNum,
-		sd.TxNum,
-		sd.CTps,
-		sd.Bps,
-	)
-	l.logger.Notice("")
 }
 
 func (l *ControllerImpl) asyncGetAllResponse() {

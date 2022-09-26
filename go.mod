@@ -3,8 +3,9 @@ module github.com/hyperbench/hyperbench
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gobuffalo/packr/v2 v2.8.3
-	github.com/hyperbench/hyperbench-common v0.0.2
+	github.com/hyperbench/hyperbench-common v0.0.3
 	github.com/hyperledger/fabric v1.4.3
+	github.com/influxdata/influxdb-client-go/v2 v2.10.0
 	github.com/influxdata/tdigest v0.0.1
 	github.com/json-iterator/go v1.1.12
 	github.com/mholt/archiver/v3 v3.5.1
@@ -30,6 +31,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20181203112020-004b46473808 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v1.4.2-0.20190710153559-aa8249ae1b8b // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -52,6 +54,7 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20190902191507-f66264322317 // indirect
 	github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/klauspost/compress v1.15.7 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
@@ -90,14 +93,14 @@ require (
 	go.uber.org/zap v1.17.0 // indirect
 	golang.org/x/crypto v0.0.0 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
-	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
+	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0 // indirect
 	golang.org/x/sys v0.0.0 // indirect
-	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
+	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	gonum.org/v1/gonum v0.6.0 // indirect
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
-	google.golang.org/grpc v1.43.0 // indirect
+	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac // indirect
+	google.golang.org/grpc v1.46.2 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
