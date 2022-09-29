@@ -98,7 +98,7 @@ func NewLocalMaster() (*LocalMaster, error) {
 		},
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "can not create master")
+		return nil, errors.Wrap(err, "can not create local master")
 	}
 
 	return &LocalMaster{
