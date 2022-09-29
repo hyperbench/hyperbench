@@ -93,8 +93,8 @@ func NewLocalMaster() (*LocalMaster, error) {
 	masterVM, err := vm.NewVM(vmType, base.ConfigBase{
 		Path: scriptPath,
 		Ctx: fcom.VMContext{
-			WorkerIdx: -1,
-			VMIdx:     -1,
+			WorkerIdx: 0,
+			VMIdx:     0,
 		},
 	})
 	if err != nil {

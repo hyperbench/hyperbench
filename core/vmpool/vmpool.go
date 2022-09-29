@@ -2,47 +2,106 @@ package vmpool
 
 import (
 	fcom "github.com/hyperbench/hyperbench-common/common"
-	"time"
-
+	"github.com/hyperbench/hyperbench/core/utils"
+	"github.com/op/go-logging"
+	"github.com/pkg/errors"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/hyperbench/hyperbench/vm"
 	"github.com/hyperbench/hyperbench/vm/base"
 	"github.com/spf13/viper"
 )
 
-// Pool is the reusable vm.VM pool, Pop and Push is concurrent-safe
-type Pool interface {
-	// Pop gets a vm.VM from Pool concurrent-safely
-	// if it's implement in no-block way, it may return nil
-	Pop() vm.VM
-
-	// Push sets a vm.WorkerVM to Pool concurrent-safely.
-	Push(vm.VM)
-
-	// Walk try to apply each vm.VM with wf until wf return false or all vm.WorkerVM in Pool have been applied.
-	Walk(wf func(v vm.VM) (terminal bool))
-
-	// Close close all vm.WorkerVM in Pool.
-	Close()
+type WrapVM struct {
+	vm vm.VM
+	ch chan struct{}
 }
 
-// PoolImpl implement Pool.
-type PoolImpl struct {
-	ch   chan vm.VM
-	wait time.Duration
-	cap  int64
+type PoolImp struct {
+	cap          int
+	closeCh      chan struct{}
+	wg           sync.WaitGroup
+	job          func(v vm.VM)
+	currentIndex int
+	vms          []*WrapVM
+	log          *logging.Logger
 }
 
-// NewPoolImpl create PoolImpl.
-func NewPoolImpl(workerID int64, cap int64, wait time.Duration) (*PoolImpl, error) {
-	p := &PoolImpl{
-		cap:  cap,
-		wait: wait,
-		ch:   make(chan vm.VM, cap),
+func (i *PoolImp) startListenVM(nvm *WrapVM) {
+	defer i.wg.Done()
+	for {
+		select {
+		case <-i.closeCh:
+			return
+		case _, ok := <-nvm.ch:
+			if !ok {
+				return
+			}
+			i.job(nvm.vm)
+		}
 	}
+}
 
+func (i *PoolImp) Push() error {
+	// find a not pull vm, push struct{} into vm.ch
+	for j := 0; j < len(i.vms); j++ {
+		i.currentIndex = (i.currentIndex + j) % len(i.vms)
+		wrapVM := i.vms[i.currentIndex]
+		if len(wrapVM.ch) < i.cap {
+			wrapVM.ch <- struct{}{}
+			i.addCurrentIndex()
+			return nil
+		}
+	}
+	return errors.New("vm is too busy")
+}
+
+func (i *PoolImp) addCurrentIndex() {
+	i.currentIndex++
+	i.currentIndex = i.currentIndex % len(i.vms)
+}
+
+func (i *PoolImp) Walk(wf func(v vm.VM) bool) {
+	for _, wvm := range i.vms {
+		exist := wf(wvm.vm)
+		if exist {
+			return
+		}
+	}
+}
+
+func (i *PoolImp) AsyncWalk(wf func(v vm.VM) bool) {
+	wg := sync.WaitGroup{}
+	for _, wvm := range i.vms {
+		wg.Add(1)
+		go func(wvm *WrapVM) {
+			defer wg.Done()
+			exist := wf(wvm.vm)
+			if exist {
+				return
+			}
+		}(wvm)
+	}
+	wg.Wait()
+}
+
+func (i *PoolImp) Close() {
+	for _, wvm := range i.vms {
+		wvm.vm.Close()
+		close(wvm.ch)
+	}
+	i.wg.Wait()
+}
+
+func NewPoolImp(workerID int64, tps, cap int64, job func(v vm.VM)) (*PoolImp, error) {
+	chCap := utils.DivideAndCeil(int(tps), int(cap))
+	p := &PoolImp{
+		cap:     chCap,
+		job:     job,
+		closeCh: make(chan struct{}),
+	}
 	scriptPath := viper.GetString(fcom.ClientScriptPath)
 	t := strings.TrimPrefix(path.Ext(scriptPath), ".")
 	configBase := base.ConfigBase{
@@ -54,7 +113,8 @@ func NewPoolImpl(workerID int64, cap int64, wait time.Duration) (*PoolImpl, erro
 	}
 	configBase.Ctx.WorkerIdx = workerID
 	var i int64
-	fcom.GetLogger("pool").Notice(workerID, cap, scriptPath, t)
+	p.log = fcom.GetLogger("pool")
+	p.log.Notice(workerID, cap, scriptPath, t)
 	for i = 0; i < cap; i++ {
 		nvm, err := vm.NewVM(t, configBase)
 		if err != nil {
@@ -62,51 +122,14 @@ func NewPoolImpl(workerID int64, cap int64, wait time.Duration) (*PoolImpl, erro
 		}
 		configBase.Ctx.VMIdx++
 		// generate each vm with given index
-		p.Push(nvm)
+		p.wg.Add(1)
+		wvm := &WrapVM{
+			vm: nvm,
+			ch: make(chan struct{}, chCap),
+		}
+		p.vms = append(p.vms, wvm)
+		go p.startListenVM(wvm)
 	}
 
 	return p, nil
-}
-
-// Close close all vm.WorkerVM in Pool.
-func (p *PoolImpl) Close() {
-	p.Walk(func(v vm.VM) bool {
-		v.Close()
-		return false
-	})
-}
-
-// Pop gets a vm.VM from Pool concurrent-safely
-// if it's implement in no-block way, it may return nil.
-func (p *PoolImpl) Pop() (worker vm.VM) {
-	timer := time.NewTimer(p.wait)
-	defer timer.Stop()
-	select {
-	case worker = <-p.ch:
-		return
-	case <-timer.C:
-		return
-	}
-}
-
-// Push sets a vm.WorkerVM to Pool concurrent-safely.
-func (p *PoolImpl) Push(worker vm.VM) {
-	select {
-	case p.ch <- worker:
-	default:
-	}
-	return
-}
-
-// Walk try to apply each vm.VM with wf until wf return false or all vm.WorkerVM in Pool have been applied
-func (p *PoolImpl) Walk(wf func(v vm.VM) bool) {
-	l := len(p.ch)
-	for i := 0; i < l; i++ {
-		worker := <-p.ch
-		exit := wf(worker)
-		p.ch <- worker
-		if exit {
-			return
-		}
-	}
 }

@@ -16,6 +16,9 @@ package engine
 
 import (
 	"context"
+	fcom "github.com/hyperbench/hyperbench-common/common"
+	"github.com/hyperbench/hyperbench/core/utils"
+	"github.com/op/go-logging"
 	"sync"
 	"time"
 )
@@ -58,6 +61,7 @@ type BaseEngineConfig struct {
 type baseEngine struct {
 	BaseEngineConfig
 
+	log      *logging.Logger
 	interval time.Duration
 	//wg         sync.WaitGroup
 	timeoutCtx context.Context
@@ -71,6 +75,7 @@ func newBaseEngine(config BaseEngineConfig) *baseEngine {
 		BaseEngineConfig: config,
 		timeoutCtx:       timeoutCtx,
 		cancelFunc:       cancelFunc,
+		log:              fcom.GetLogger("engine"),
 	}).adjust()
 }
 
@@ -85,16 +90,14 @@ func (b *baseEngine) Run(callback Callback) {
 }
 
 func (b *baseEngine) schedule(callback Callback) {
-	// rounded up
-	totalBatch, batchCount := int((b.Duration+b.interval)/b.interval), 0
+	totalBatch, batchCount := utils.DivideAndCeil(int(b.Duration), int(b.interval)), 0
 	tick := time.NewTicker(b.interval)
 	defer func() {
 		tick.Stop()
 	}()
 	for ; batchCount < totalBatch; batchCount++ {
-		b.Wg.Add(int(b.Instant))
 		for i := int64(0); i < b.Instant; i++ {
-			go callback()
+			callback()
 		}
 		<-tick.C
 	}

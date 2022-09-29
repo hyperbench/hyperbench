@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hyperbench/hyperbench/vm"
 	"github.com/spf13/viper"
 
 	"github.com/stretchr/testify/assert"
@@ -24,9 +23,6 @@ func TestLocalWorker(t *testing.T) {
 	err = localWorker.BeforeRun()
 	assert.NoError(t, err)
 
-	var vm vm.VM
-	assert.NotNil(t, localWorker.pool.Pop())
-	localWorker.pool.Push(vm)
 	err = localWorker.Do()
 	assert.NoError(t, err)
 
