@@ -8,9 +8,9 @@ function case:Run()
     -- transfer
     self.blockchain:Option({nonce=nonce})
     local result = self.blockchain:Transfer({
-        from="random0",                   -- random account `random0`
-        to="0",                         -- account in keystore
-        amount=0,
+        From="random0",                   -- random account `random0`
+        To="0",                         -- account in keystore
+        Amount=0,
     })
 
     -- increase nonce
