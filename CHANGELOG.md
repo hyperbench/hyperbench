@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.4](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.3...v1.0.4) (2022-09-30)
+
+
+### Features
+
+* change VMPool ([4cb5feb](/git.hyperchain.cn/hyperchain/hyperchain/commit/4cb5feb26433a075a65693f04f7ea06a04ca29ad))
+* influxdb ([dc9b3f6](/git.hyperchain.cn/hyperchain/hyperchain/commit/dc9b3f669bece21b61df979f91d78f1d513b3c96))
+
+
+### Bug Fixes
+
+* **glua:** fix repeated decode parameter and change result to Lua.UserData ([567d224](/git.hyperchain.cn/hyperchain/hyperchain/commit/567d224632abf7c8a01940a3584773fe8d5a105d))
+* **go.mod:** fix [#32](null/git.hyperchain.cn/hyperchain/hyperchain/issues/32) update go.mod and go.sum ([e236c54](/git.hyperchain.cn/hyperchain/hyperchain/commit/e236c54ff78d435b375f98709d7d41356cd3671a))
+
 ### [1.0.3](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.2...v1.0.3) (2022-08-09)
 
 
