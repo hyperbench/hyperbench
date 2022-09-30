@@ -85,17 +85,18 @@ func (b *baseEngine) Run(callback Callback) {
 }
 
 func (b *baseEngine) schedule(callback Callback) {
-	totalBatch, batchCount := int(b.Duration/b.interval), 0
+	// rounded up
+	totalBatch, batchCount := int((b.Duration+b.interval)/b.interval), 0
 	tick := time.NewTicker(b.interval)
 	defer func() {
 		tick.Stop()
 	}()
 	for ; batchCount < totalBatch; batchCount++ {
-		<-tick.C
 		b.Wg.Add(int(b.Instant))
 		for i := int64(0); i < b.Instant; i++ {
 			go callback()
 		}
+		<-tick.C
 	}
 }
 

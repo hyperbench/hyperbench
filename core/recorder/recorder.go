@@ -17,6 +17,7 @@ import (
 type Recorder interface {
 	// Process process input report.
 	Process(input fcom.Report)
+	ProcessStatistic(rs *fcom.RemoteStatistic)
 	// Release source.
 	Release()
 	processor
@@ -24,6 +25,7 @@ type Recorder interface {
 
 type processor interface {
 	process(report fcom.Report)
+	processStatistic(rs *fcom.RemoteStatistic)
 	release()
 }
 
@@ -55,6 +57,26 @@ func NewRecorder() Recorder {
 		csvPath = fileName
 		if err == nil {
 			ps = append(ps, newCSVProcessor(csvFile))
+		}
+	}
+
+	// influxdb
+	if viper.IsSet(fcom.RecorderInflucDBPath) {
+		benchmark := viper.GetString(fcom.BenchmarkDirPath)
+		url := viper.GetString(fcom.InfluxDBUrlPath)
+		db := viper.GetString(fcom.InfluxDBDatabasePath)
+		uname := viper.GetString(fcom.InfluxDBUsernamePath)
+		pwd := viper.GetString(fcom.InfluxDBPasswordPath)
+		influxDB, err := newInfluxdb(benchmark, url, db, uname, pwd)
+		if err == nil {
+			ps = append(ps, influxDB)
+		} else {
+			logger.Errorf("int influxdb client error: %v", err)
+		}
+		if err == nil {
+			ps = append(ps, influxDB)
+		} else {
+			logger.Errorf("int influxdb client error: %v", err)
 		}
 	}
 
@@ -98,6 +120,17 @@ func (b *baseRecorder) process(report fcom.Report) {
 	}
 }
 
+// ProcessStatistic process statistic.
+func (b *baseRecorder) ProcessStatistic(rs *fcom.RemoteStatistic) {
+	b.processStatistic(rs)
+}
+
+func (b *baseRecorder) processStatistic(rs *fcom.RemoteStatistic) {
+	for _, p := range b.ps {
+		p.processStatistic(rs)
+	}
+}
+
 type logProcessor struct {
 	logger *logging.Logger
 }
@@ -114,6 +147,26 @@ func (p *logProcessor) process(report fcom.Report) {
 	p.logData("Cur  ", report.Cur)
 	p.logData("Sum  ", report.Sum)
 	p.logger.Notice("")
+}
+
+func (p *logProcessor) processStatistic(sd *fcom.RemoteStatistic) {
+	p.logger.Notice("")
+	p.logger.Notice("\t\tSent\t\tMissed\t\tTotal\t\tTps")
+	p.logger.Noticef("\t\t%v\t\t%v\t\t%v\t\t%.1f", sd.SentTx, sd.MissedTx, sd.SentTx+sd.MissedTx, sd.Tps)
+	p.logger.Notice("")
+	p.logger.Notice("       From        \t         To           \tBlk\tTx\tCTps\tBps")
+	p.logger.Noticef("%s\t%s\t%v\t%v\t%.1f\t%.1f",
+		time.Unix(0, sd.Start).Format("2006-01-02 15:04:05"),
+		time.Unix(0, sd.End).Format("2006-01-02 15:04:05"),
+		sd.BlockNum,
+		sd.TxNum,
+		sd.CTps,
+		sd.Bps,
+	)
+	p.logger.Notice("")
+
+	//p.logger.Noticef("viper all settings:%v", settings)
+	//p.logger.Noticef("viper:%v",viper.GetViper())
 }
 
 func (p *logProcessor) logTitle() {
@@ -158,6 +211,10 @@ func newCSVProcessor(f *os.File) *csvProcessor {
 func (p *csvProcessor) process(report fcom.Report) {
 	p.logData(report.Cur)
 	p.logData(report.Sum)
+}
+
+func (p *csvProcessor) processStatistic(rs *fcom.RemoteStatistic) {
+	_ = p.writer.Write(utils.RemoteStatistic2CSV(nil, rs))
 }
 
 func (p *csvProcessor) release() {

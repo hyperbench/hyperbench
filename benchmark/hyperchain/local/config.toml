@@ -1,8 +1,8 @@
 [engine]
-rate = 20                            # 速率
+rate = 5                            # 速率
 duration = "20s"                     # 持续时间
-cap = 10                             # 客户端虚拟机数量
-instant=5                            # 每个批次发的交易数
+cap = 2                             # 客户端虚拟机数量
+instant=1                            # 每个批次发的交易数
 wait="0s"                            # 获取cap最大等待时间
 
 [client]
@@ -22,6 +22,12 @@ level="notice"              # 日志等级
 
 [recorder.csv]
 dir="./csv"                 # csv文件输出路径
+
+[recorder.influxdb]
+url="http://localhost:8086"                 #influxdb url
+database="hyperbench"
+username="admin"
+password="admin"
 
 [verify]
 enable=true
