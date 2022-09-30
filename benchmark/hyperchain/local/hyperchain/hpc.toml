@@ -16,7 +16,8 @@ reConnectTime = 10000
 [webSocket]
     # webSocket connect port
     ports = ["10001"]
-
+[grpc]
+    ports = ["11001"]
 [polling]
     #重发次数
     resendTime = 1

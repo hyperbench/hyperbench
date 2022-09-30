@@ -16,6 +16,7 @@ package worker
 
 import (
 	"context"
+	"github.com/op/go-logging"
 	"math/rand"
 	"path"
 	"strings"
@@ -37,7 +38,7 @@ import (
 type LocalWorker struct {
 	conf           LocalWorkerConfig
 	eg             engine.Engine
-	pool           vmpool.Pool
+	pool           *vmpool.PoolImp
 	collector      collector.Collector
 	idx            fcom.TxIndex
 	wg             sync.WaitGroup
@@ -50,6 +51,7 @@ type LocalWorker struct {
 	txInterval     int64          // interval for sample ,every txInterval chose one tx randomly
 	verifyVM       vm.WorkerVM    // vm used for verification to make sure query from same node
 	verifyIndexMap map[int64]bool // store the sample result
+	log            *logging.Logger
 }
 
 // LocalWorkerConfig define the local worker need config.
@@ -73,6 +75,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 		colReq:         make(chan struct{}),
 		colRet:         make(chan collector.Collector),
 		verifyIndexMap: make(map[int64]bool),
+		log:            fcom.GetLogger("localWorker"),
 	}
 	// init engine
 	eg := engine.NewEngine(engine.BaseEngineConfig{
@@ -83,7 +86,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 	})
 
 	// init vm pool
-	pool, err := vmpool.NewPoolImpl(config.Index, config.Cap, config.Wait)
+	pool, err := vmpool.NewPoolImp(config.Index, config.Rate, config.Cap, localWorker.run)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +142,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 
 // SetContext set the context of worker passed from Master
 func (l *LocalWorker) SetContext(bs []byte) (err error) {
-	l.pool.Walk(func(v vm.VM) bool {
+	l.pool.AsyncWalk(func(v vm.VM) bool {
 		if err = v.BeforeSet(); err != nil {
 			return true
 		}
@@ -153,7 +156,7 @@ func (l *LocalWorker) SetContext(bs []byte) (err error) {
 
 // BeforeRun call user hook
 func (l *LocalWorker) BeforeRun() (err error) {
-	l.pool.Walk(func(v vm.VM) bool {
+	l.pool.AsyncWalk(func(v vm.VM) bool {
 		if err = v.BeforeRun(); err != nil {
 			return true
 		}
@@ -164,17 +167,15 @@ func (l *LocalWorker) BeforeRun() (err error) {
 
 // Do call the workers to running
 func (l *LocalWorker) Do() error {
-
 	go l.runEngine()
 
 	go l.runCollector()
-
 	return nil
 }
 
 // AfterRun call user hook
 func (l *LocalWorker) AfterRun() (err error) {
-	l.pool.Walk(func(v vm.VM) bool {
+	l.pool.AsyncWalk(func(v vm.VM) bool {
 		if err = v.AfterRun(); err != nil {
 			return true
 		}
@@ -183,7 +184,7 @@ func (l *LocalWorker) AfterRun() (err error) {
 	return err
 }
 
-// Statistic get the number of sent and missed transactions
+// Statistics get the number of sent and missed transactions
 func (l *LocalWorker) Statistics() (int64, int64) {
 	return l.idx.TxIdx + 1, l.idx.MissIdx
 }
@@ -214,26 +215,23 @@ func (l *LocalWorker) runCollector() {
 }
 
 func (l *LocalWorker) runEngine() {
-	l.eg.Run(l.asyncJob)
-
+	l.eg.Run(l.job)
 	// close all engines while Do end to ensure all func has been done
-	l.wg.Wait()
+	l.pool.Close()
 	close(l.resultCh)
+	l.log.Noticef("close resultCh")
 }
 
-func (l *LocalWorker) asyncJob() {
-	v := l.pool.Pop()
-	defer func() {
-		if v != nil {
-			l.pool.Push(v)
-		}
-		l.wg.Done()
-	}()
-	if v == nil {
+func (l *LocalWorker) job() {
+	err := l.pool.Push()
+	if err != nil {
 		atomic.AddInt64(&l.idx.MissIdx, 1)
 		// if worker can not get vm from pool, just shortcut
 		return
 	}
+}
+
+func (l *LocalWorker) run(v vm.VM) {
 	txContext := fcom.TxContext{
 		Context: l.ctx,
 		TxIndex: l.atomicAddIndex(),

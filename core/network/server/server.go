@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/hyperbench/hyperbench/core/utils"
 	"net/http"
 	"os"
 	"strconv"
@@ -164,10 +165,10 @@ func (s *Server) Start() error {
 
 		s.workerHandle, err = worker.NewLocalWorker(worker.LocalWorkerConfig{
 			Index:    int64(s.index),
-			Instant:  int64(viper.GetInt(fcom.EngineInstantPath) / l),
+			Instant:  int64(utils.DivideAndCeil(viper.GetInt(fcom.EngineInstantPath), l)),
 			Wait:     viper.GetDuration(fcom.EngineWaitPath),
-			Cap:      int64(viper.GetInt(fcom.EngineCapPath) / l),
-			Rate:     int64(viper.GetInt(fcom.EngineRatePath) / l),
+			Cap:      int64(utils.DivideAndCeil(viper.GetInt(fcom.EngineCapPath), l)),
+			Rate:     int64(utils.DivideAndCeil(viper.GetInt(fcom.EngineRatePath), l)),
 			Duration: viper.GetDuration(fcom.EngineDurationPath),
 		})
 
@@ -220,7 +221,7 @@ func (s *Server) Start() error {
 			return
 		}
 		// nolint
-		go s.workerHandle.BeforeRun()
+		s.workerHandle.BeforeRun()
 
 		c.String(http.StatusOK, "ok")
 	})

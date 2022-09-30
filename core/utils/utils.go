@@ -73,3 +73,8 @@ func i2s(i interface{}) (s string) {
 	}
 	return ""
 }
+
+// DivideAndCeil a/b rounded up.
+func DivideAndCeil(a, b int) int {
+	return (a + b - 1) / b
+}

@@ -220,16 +220,13 @@ func (l *ControllerImpl) asyncGetAllResponse() {
 				go l.getWorkerResponse(w, &wg, &finishWg, output)
 			}
 			wg.Wait()
-			//l.logger.Notice("====got")
 			close(output)
 			for col := range output {
 				_ = l.curCollector.MergeC(col)
 				_ = l.sumCollector.MergeC(col)
 			}
 			l.report()
-
 		case <-ctx.Done():
-			//l.logger.Notice("====ctx.done")
 			close(l.reportChan)
 			return
 		}

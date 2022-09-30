@@ -56,7 +56,7 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	// load script
 	err = vm.vm.DoFile(base.Path)
 	if err != nil {
-		return nil, errors2.Wrap(err,"load script fail")
+		return nil, errors2.Wrap(err, "load script fail")
 	}
 
 	// get test
@@ -114,7 +114,7 @@ func (v *VM) injectTestcaseBase() {
 		table := v.vm.NewTable()
 		v.vm.SetMetatable(table, v.vm.GetMetatable(lua.LString(testcase)))
 		err := v.setPlugins(table)
-		if err != nil{
+		if err != nil {
 			v.Logger.Errorf("setPlugins fail:%v", err)
 		}
 		v.vm.Push(table)
