@@ -3,22 +3,37 @@ package toolkit
 import (
 	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"reflect"
 )
 
 // ToolKit is the set of tool plugins.
 // exported methods and fields can be inject into vm.
 type ToolKit struct {
+	seed *rand.Rand
 }
 
 // NewToolKit create a new ToolKit instant as a plugin to vm
 func NewToolKit() *ToolKit {
-	return &ToolKit{}
+	r := rand.New(rand.NewSource(1))
+	return &ToolKit{
+		r,
+	}
+}
+
+// SetRandSeed reset the rand seed of randStr
+func (t *ToolKit) SetRandSeed(s int64) {
+	t.seed = rand.New(rand.NewSource(s))
 }
 
 // RandStr generate a random string with specific length
 func (t *ToolKit) RandStr(l uint) string {
 	return randomString(l)
+}
+
+// RandStr generate a random string with specific length using seed setted
+func (t *ToolKit) RandStrSeed(l uint) string {
+	return randomStringWithSeed(t.seed, l)
 }
 
 // RandInt generate a random int in specific range
