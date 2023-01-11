@@ -3,7 +3,7 @@ module github.com/hyperbench/hyperbench
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gobuffalo/packr/v2 v2.8.3
-	github.com/hyperbench/hyperbench-common v0.0.3
+	github.com/hyperbench/hyperbench-common v0.0.4
 	github.com/hyperledger/fabric v1.4.3
 	github.com/influxdata/influxdb-client-go/v2 v2.10.0
 	github.com/influxdata/tdigest v0.0.1
