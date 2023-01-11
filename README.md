@@ -16,6 +16,7 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 
 | hyperbench version | hyperbench-plugins version |
 |--------------------|----------------------------|
+| v1.0.5             | v0.0.5                     |
 | v1.0.4             | v0.0.4                     |
 | v1.0.3             | v0.0.3                     |
 | v1.0.2             | v0.0.2                     |
