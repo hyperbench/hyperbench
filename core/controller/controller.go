@@ -144,14 +144,24 @@ func (l *ControllerImpl) Run() (err error) {
 	duration := viper.GetDuration(fcom.EngineDurationPath)
 	l.startChainInfo, err = l.master.LogStatus()
 	tick := time.NewTicker(duration)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		for {
-			<-tick.C
+		defer wg.Done()
+		fn := func() {
 			l.endChainInfo, err = l.master.LogStatus()
 			if err != nil {
 				l.logger.Error(err)
 			}
 			tick.Stop()
+		}
+		select {
+		case <-tick.C:
+			fn()
+		case <-ctx.Done():
+			fn()
 		}
 	}()
 	for _, w := range l.workerClients {
@@ -160,7 +170,7 @@ func (l *ControllerImpl) Run() (err error) {
 	}
 
 	// get response
-	go l.asyncGetAllResponse()
+	go l.asyncGetAllResponse(ctx, cancel)
 
 	for report := range l.reportChan {
 		l.recorder.Process(report)
@@ -170,6 +180,8 @@ func (l *ControllerImpl) Run() (err error) {
 	for _, w := range l.workerClients {
 		w.worker.AfterRun()
 	}
+
+	wg.Wait()
 	sd, err := l.master.Statistic(l.startChainInfo, l.endChainInfo)
 	if err != nil {
 		l.logger.Notice(err)
@@ -194,7 +206,7 @@ func (l *ControllerImpl) Run() (err error) {
 	return nil
 }
 
-func (l *ControllerImpl) asyncGetAllResponse() {
+func (l *ControllerImpl) asyncGetAllResponse(ctx context.Context, cancel context.CancelFunc) {
 
 	workerNum := len(l.workerClients)
 
@@ -206,13 +218,12 @@ func (l *ControllerImpl) asyncGetAllResponse() {
 	l.curCollector.Reset()
 	l.sumCollector.Reset()
 	tick := time.NewTicker(10 * time.Second)
-	ctx, cancel := context.WithCancel(context.Background())
 	var finishWg sync.WaitGroup
 	finishWg.Add(workerNum)
 
 	go func() {
 		finishWg.Wait()
-		l.logger.Notice("cancel")
+		l.logger.Notice("cancel asyncGetAllResponse")
 		cancel()
 	}()
 
@@ -256,12 +267,8 @@ func (l *ControllerImpl) getWorkerResponse(w *workerClient, batchWg *sync.WaitGr
 	}
 
 	col, valid, err := w.worker.CheckoutCollector()
-	if err != nil {
-		l.logger.Error(err)
-		batchWg.Done()
-		return
-	}
-	if !valid {
+	if err != nil || !valid {
+		l.logger.Errorf("CheckoutCollector valid:%v, err:%v", valid, err)
 		w.finished = true
 		l.logger.Notice("finishWg done")
 		finishWg.Done()
