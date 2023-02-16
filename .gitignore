@@ -25,4 +25,5 @@ lua/testImpl.lua
 dist
 
 node_modules
+package-lock.json
 

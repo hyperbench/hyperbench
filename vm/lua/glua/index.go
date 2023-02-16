@@ -75,11 +75,15 @@ func indexFunc4Array(L *lua.LState) int {
 	ref, mt := getParameter(L, 1)
 	ref = reflect.Indirect(ref)
 	key := L.CheckAny(2)
+	return indexFunc4ArrayOrSlice(L, ref, key, mt)
+}
 
+func indexFunc4ArrayOrSlice(L *lua.LState, ref reflect.Value, key lua.LValue, mt *lua.LTable) int {
 	switch converted := key.(type) {
 	case lua.LNumber:
 		index := int(converted)
 		if index < 1 || index > ref.Len() {
+			logger.Errorf("index[%v] out of range %v", index, ref.Len())
 			L.ArgError(2, "index out of range")
 		}
 		value := ref.Index(index - 1)
@@ -94,6 +98,7 @@ func indexFunc4Array(L *lua.LState) int {
 		}
 		return 0
 	default:
+		logger.Errorf("invalid type:%v, support type is: a number or string", key.Type())
 		L.ArgError(2, "must be a number or string")
 	}
 	return 1
@@ -103,28 +108,7 @@ func indexFunc4Array(L *lua.LState) int {
 func indexFunc4Slice(L *lua.LState) int {
 	ref, mt := getParameter(L, 1)
 	key := L.CheckAny(2)
-
-	switch converted := key.(type) {
-	case lua.LNumber:
-		index := int(converted)
-		if index < 1 || index > ref.Len() {
-			L.ArgError(2, "index out of range")
-		}
-		value := ref.Index(index - 1)
-		if (value.Kind() == reflect.Struct || value.Kind() == reflect.Array) && value.CanAddr() {
-			value = value.Addr()
-		}
-		L.Push(Go2Lua(L, value.Interface()))
-	case lua.LString:
-		if fn := getFunc(mt, string(converted)); fn != nil {
-			L.Push(fn)
-			return 1
-		}
-		return 0
-	default:
-		L.ArgError(2, "must be a number or string")
-	}
-	return 1
+	return indexFunc4ArrayOrSlice(L, ref, key, mt)
 }
 
 // indexFunc4Struct is the LuaFunction for accessing struct converted from go
@@ -140,7 +124,7 @@ func indexFunc4Struct(L *lua.LState) int {
 	ref = ref.Elem()
 	switch typ := reflect.TypeOf(ref.Interface()); typ.Kind() {
 	case reflect.Array, reflect.Chan, reflect.Map, reflect.Ptr, reflect.Slice, reflect.Struct:
-		mt = convert2MetaTbl(L, typ)
+		mt, _ = convert2MetaTbl(L, typ)
 	}
 	index := getFieldIndex(mt, key)
 	if index == nil {
@@ -164,7 +148,7 @@ func getParameter(L *lua.LState, index int) (ref reflect.Value, mt *lua.LTable) 
 
 // getFieldIndex returns indexes of fields of go struct
 func getFieldIndex(m *lua.LTable, name string) []int {
-	fields := m.RawGetString("fields").(*lua.LTable)
+	fields := m.RawGetString(fieldsKey).(*lua.LTable)
 	if index := fields.RawGetString(name); index != lua.LNil {
 		return index.(*lua.LUserData).Value.([]int)
 	}
@@ -173,7 +157,7 @@ func getFieldIndex(m *lua.LTable, name string) []int {
 
 // getFunc returns function of specific key in map、slice、array or struct
 func getFunc(m *lua.LTable, name string) lua.LValue {
-	methods := m.RawGetString("methods").(*lua.LTable)
+	methods := m.RawGetString(methodsKey).(*lua.LTable)
 	if fn := methods.RawGetString(name); fn != lua.LNil {
 		return fn
 	}

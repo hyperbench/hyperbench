@@ -20,5 +20,5 @@ counter=0
 #[ $? -ne 0 ] && exit 1
 
 # add formatted files
-# git add -u
+ git add -u
 

@@ -23,83 +23,105 @@ package glua
 
 import (
 	"fmt"
+	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/pkg/errors"
 	lua "github.com/yuin/gopher-lua"
 	"reflect"
 )
 
+const (
+	indexKey   = "__index"
+	fieldsKey  = "fields"
+	methodsKey = "methods"
+)
+
+var (
+	logger         = fcom.GetLogger("glua")
+	invalidTypeErr = func(v lua.LValue, target reflect.Type) error {
+		return errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
+	}
+)
+
 //Go2Lua convert go values to lua.LValue
 func Go2Lua(L *lua.LState, value interface{}) lua.LValue {
-	if value == nil {
+	lValue, err := go2Lua(L, value)
+	if err != nil {
+		logger.Errorf("convert go to lua err:%v", err)
 		return lua.LNil
 	}
+	return lValue
+}
+
+func go2Lua(L *lua.LState, value interface{}) (lua.LValue, error) {
+	if value == nil {
+		return lua.LNil, nil
+	}
 	if luaValue, ok := value.(lua.LValue); ok {
-		return luaValue
+		return luaValue, nil
 	}
 	switch val := reflect.ValueOf(value); val.Kind() {
 	case reflect.Bool:
-		return lua.LBool(val.Bool())
+		return lua.LBool(val.Bool()), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return lua.LNumber(val.Int())
+		return lua.LNumber(val.Int()), nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return lua.LNumber(float64(val.Uint()))
+		return lua.LNumber(float64(val.Uint())), nil
 	case reflect.Float32, reflect.Float64:
-		return lua.LNumber(val.Float())
+		return lua.LNumber(val.Float()), nil
 	case reflect.Chan, reflect.Map, reflect.Ptr, reflect.Slice:
 		if val.IsNil() {
-			return lua.LNil
+			return lua.LNil, nil
 		}
-		fallthrough
+		return getUserData(L, val)
 	case reflect.Array, reflect.Struct:
-		ud := L.NewUserData()
-		ud.Value = val.Interface()
-		ud.Metatable = convert2MetaTbl(L, val.Type())
-		return ud
+		return getUserData(L, val)
 	case reflect.Func:
 		if val.IsNil() {
-			return lua.LNil
+			return lua.LNil, nil
 		}
-		return go2LuaFunction(L, val, false)
+		return go2LuaFunction(L, val, false), nil
 	case reflect.String:
-		return lua.LString(val.String())
+		return lua.LString(val.String()), nil
 	default:
 		ud := L.NewUserData()
 		ud.Value = val.Interface()
-		return ud
+		return ud, nil
 	}
 }
 
 // convert2MetaTbl generates metatable of specific type
-func convert2MetaTbl(L *lua.LState, valueType reflect.Type) *lua.LTable {
+func convert2MetaTbl(L *lua.LState, valueType reflect.Type) (*lua.LTable, error) {
 	mt := &lua.LTable{}
 	methods := L.CreateTable(0, valueType.NumMethod())
 	switch valueType.Kind() {
 	case reflect.Array:
-		mt = L.CreateTable(0, 7)
-		mt.RawSetString("__index", L.NewFunction(indexFunc4Array))
+		mt = createTblAndSetRaw(L, 7, indexKey, indexFunc4Array)
 	case reflect.Slice:
-		mt = L.CreateTable(0, 8)
-		mt.RawSetString("__index", L.NewFunction(indexFunc4Slice))
+		mt = createTblAndSetRaw(L, 8, indexKey, indexFunc4Slice)
 	case reflect.Struct:
 		mt = L.CreateTable(0, 6)
 		fields := L.CreateTable(0, valueType.NumField())
 		injectFields(L, valueType, fields)
-		mt.RawSetString("fields", fields)
+		mt.RawSetString(fieldsKey, fields)
 	case reflect.Map:
-		mt = L.CreateTable(0, 7)
-		mt.RawSetString("__index", L.NewFunction(indexFunc4Map))
+		mt = createTblAndSetRaw(L, 7, indexKey, indexFunc4Map)
 	case reflect.Ptr:
 		switch valueType.Elem().Kind() {
 		case reflect.Struct:
-			mt = L.CreateTable(0, 8)
-			mt.RawSetString("__index", L.NewFunction(indexFunc4Struct))
+			mt = createTblAndSetRaw(L, 8, indexKey, indexFunc4Struct)
 		}
 		injectMethods(L, valueType, methods, true)
 	default:
-		panic("unexpected kind " + valueType.Kind().String())
+		return nil, fmt.Errorf("unexpected kind %v", valueType.Kind().String())
 	}
-	mt.RawSetString("methods", methods)
+	mt.RawSetString(methodsKey, methods)
 	mt.RawSetString("__tostring", L.NewFunction(lua2string))
+	return mt, nil
+}
+
+func createTblAndSetRaw(L *lua.LState, hcap int, key string, fn func(L *lua.LState) int) *lua.LTable {
+	mt := L.CreateTable(0, hcap)
+	mt.RawSetString(key, L.NewFunction(fn))
 	return mt
 }
 
@@ -108,9 +130,9 @@ func lua2string(L *lua.LState) int {
 	ud := L.CheckUserData(1)
 	if stringer, ok := ud.Value.(fmt.Stringer); ok {
 		L.Push(lua.LString(stringer.String()))
-	} else {
-		L.Push(lua.LString(ud.String()))
+		return 1
 	}
+	L.Push(lua.LString(ud.String()))
 	return 1
 }
 
@@ -190,39 +212,15 @@ func getGoValueReflect(L *lua.LState, v lua.LValue, target reflect.Type, convert
 		return reflect.ValueOf(v), nil
 	}
 
-	isPtr := false
-
 	switch converted := v.(type) {
-	case lua.LBool:
-		val := reflect.ValueOf(bool(converted))
-		if !val.Type().ConvertibleTo(target) {
-			return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-		}
-		return val.Convert(target), nil
-	case lua.LNumber:
-		val := reflect.ValueOf(float64(converted))
-		if !val.Type().ConvertibleTo(target) {
-			return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-		}
-		return val.Convert(target), nil
+	case lua.LBool, lua.LNumber, *lua.LState, lua.LString:
+		return convertToTargetType(converted, target, v)
 	case *lua.LNilType:
 		switch target.Kind() {
 		case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice, reflect.UnsafePointer, reflect.Uintptr:
 			return reflect.Zero(target), nil
 		}
-		return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-	case *lua.LState:
-		val := reflect.ValueOf(converted)
-		if !val.Type().ConvertibleTo(target) {
-			return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-		}
-		return val.Convert(target), nil
-	case lua.LString:
-		val := reflect.ValueOf(string(converted))
-		if !val.Type().ConvertibleTo(target) {
-			return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-		}
-		return val.Convert(target), nil
+		return reflect.Value{}, invalidTypeErr(v, target)
 	case *lua.LTable:
 		// if same value has been converted return the record
 		if record := convertedRecord[converted]; record.IsValid() {
@@ -235,106 +233,28 @@ func getGoValueReflect(L *lua.LState, v lua.LValue, target reflect.Type, convert
 
 		switch {
 		case target.Kind() == reflect.Array:
-			elemType := target.Elem()
-			length := converted.Len()
-			if length != target.Len() {
-				return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
-			}
-			s := reflect.New(target).Elem()
-			convertedRecord[converted] = s
-
-			for i := 0; i < length; i++ {
-				value := converted.RawGetInt(i + 1)
-				elemValue, err := getGoValueReflect(L, value, elemType, convertedRecord, nil)
-				if err != nil {
-					return reflect.Value{}, err
+			return convertTblToArrayOrSlice(L, target, converted, convertedRecord, func(target reflect.Type, length int) (reflect.Value, error) {
+				if length != target.Len() {
+					return reflect.Value{}, invalidTypeErr(v, target)
 				}
-				s.Index(i).Set(elemValue)
-			}
-			return s, nil
+				return reflect.New(target).Elem(), nil
+			})
 		case target.Kind() == reflect.Slice:
-			elemType := target.Elem()
-			length := converted.Len()
-			s := reflect.MakeSlice(target, length, length)
-			convertedRecord[converted] = s
-
-			for i := 0; i < length; i++ {
-				value := converted.RawGetInt(i + 1)
-				elemValue, err := getGoValueReflect(L, value, elemType, convertedRecord, nil)
-				if err != nil {
-					return reflect.Value{}, err
-				}
-				s.Index(i).Set(elemValue)
-			}
-
-			return s, nil
-
+			return convertTblToArrayOrSlice(L, target, converted, convertedRecord, func(target reflect.Type, length int) (reflect.Value, error) {
+				return reflect.MakeSlice(target, length, length), nil
+			})
 		case target.Kind() == reflect.Map:
-			keyType := target.Key()
-			elemType := target.Elem()
-			s := reflect.MakeMap(target)
-			convertedRecord[converted] = s
-
-			for key := lua.LNil; ; {
-				var value lua.LValue
-				key, value = converted.Next(key)
-				if key == lua.LNil {
-					break
-				}
-
-				goKey, err := getGoValueReflect(L, key, keyType, convertedRecord, nil)
-				if err != nil {
-					return reflect.Value{}, err
-				}
-				goValue, err := getGoValueReflect(L, value, elemType, convertedRecord, nil)
-				if err != nil {
-					return reflect.Value{}, err
-				}
-				s.SetMapIndex(goKey, goValue)
-			}
-
-			return s, nil
-
+			return convertTblToMap(L, target, converted, convertedRecord)
 		case target.Kind() == reflect.Ptr && target.Elem().Kind() == reflect.Struct:
 			target = target.Elem()
-			isPtr = true
-			fallthrough
+			_, p, err := convertTblToStruct(L, target, converted, convertedRecord)
+			return p, err
 		case target.Kind() == reflect.Struct:
-			s := reflect.New(target)
-			convertedRecord[converted] = s
-			t := s.Elem()
-
-			mt := convert2MetaTbl(L, target)
-
-			for key := lua.LNil; ; {
-				var value lua.LValue
-				key, value = converted.Next(key)
-				if key == lua.LNil {
-					break
-				}
-				if _, ok := key.(lua.LString); !ok {
-					continue
-				}
-
-				fieldName := key.String()
-				index := getFieldIndex(mt, fieldName)
-				if index == nil {
-					return reflect.Value{}, errors.Errorf("type %s has no field %s", target, fieldName)
-				}
-				field := target.FieldByIndex(index)
-
-				lValue, err := getGoValueReflect(L, value, field.Type, convertedRecord, nil)
-				if err != nil {
-					return reflect.Value{}, nil
-				}
-				t.FieldByIndex(field.Index).Set(lValue)
-			}
-			if isPtr {
-				return s, nil
-			}
-			return t, nil
+			s, _, err := convertTblToStruct(L, target, converted, convertedRecord)
+			return s, err
+		default:
+			return reflect.Value{}, invalidTypeErr(v, target)
 		}
-		return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
 	case *lua.LUserData:
 		val := reflect.ValueOf(converted.Value)
 		if tryConvertPtr != nil && val.Kind() != reflect.Ptr && target.Kind() == reflect.Ptr && val.Type() == target.Elem() {
@@ -344,7 +264,7 @@ func getGoValueReflect(L *lua.LState, v lua.LValue, target reflect.Type, convert
 			*tryConvertPtr = true
 		} else {
 			if !val.Type().ConvertibleTo(target) {
-				return reflect.Value{}, errors.Errorf("cannot use %v (type %T) as type %s", v, v.Type(), target)
+				return reflect.Value{}, invalidTypeErr(v, target)
 			}
 			val = val.Convert(target)
 			if tryConvertPtr != nil {
@@ -352,7 +272,104 @@ func getGoValueReflect(L *lua.LState, v lua.LValue, target reflect.Type, convert
 			}
 		}
 		return val, nil
+	default:
+		return reflect.Value{}, errors.Errorf("invalid type:%v", v.Type())
+	}
+}
+
+// convertTblToStruct the first reflect.Value is struct, the second reflect.Value is point.
+func convertTblToStruct(L *lua.LState, target reflect.Type, converted *lua.LTable, convertedRecord map[*lua.LTable]reflect.Value) (reflect.Value, reflect.Value, error) {
+	s := reflect.New(target)
+	convertedRecord[converted] = s
+	t := s.Elem()
+
+	for key := lua.LNil; ; {
+		var value lua.LValue
+		key, value = converted.Next(key)
+		if key == lua.LNil {
+			break
+		}
+		if _, ok := key.(lua.LString); !ok {
+			continue
+		}
+
+		fieldName := key.String()
+		field, exist := target.FieldByName(fieldName)
+		if !exist {
+			return reflect.Value{}, reflect.Value{}, errors.Errorf("type %s has no field %s", target, fieldName)
+		}
+
+		lValue, err := getGoValueReflect(L, value, field.Type, convertedRecord, nil)
+		if err != nil {
+			return reflect.Value{}, reflect.Value{}, err
+		}
+		t.FieldByIndex(field.Index).Set(lValue)
+	}
+	return t, s, nil
+}
+
+func convertTblToMap(L *lua.LState, target reflect.Type, converted *lua.LTable, convertedRecord map[*lua.LTable]reflect.Value) (reflect.Value, error) {
+	keyType := target.Key()
+	elemType := target.Elem()
+	s := reflect.MakeMap(target)
+	convertedRecord[converted] = s
+
+	for key := lua.LNil; ; {
+		var value lua.LValue
+		key, value = converted.Next(key)
+		if key == lua.LNil {
+			break
+		}
+
+		goKey, err := getGoValueReflect(L, key, keyType, convertedRecord, nil)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		goValue, err := getGoValueReflect(L, value, elemType, convertedRecord, nil)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		s.SetMapIndex(goKey, goValue)
+	}
+	return s, nil
+}
+
+func convertToTargetType(convertValue interface{}, target reflect.Type, v lua.LValue) (reflect.Value, error) {
+	val := reflect.ValueOf(convertValue)
+	if !val.Type().ConvertibleTo(target) {
+		return reflect.Value{}, invalidTypeErr(v, target)
+	}
+	return val.Convert(target), nil
+}
+
+func getUserData(L *lua.LState, val reflect.Value) (lua.LValue, error) {
+	ud := L.NewUserData()
+	ud.Value = val.Interface()
+	metaTbl, err := convert2MetaTbl(L, val.Type())
+	if err != nil {
+		return nil, err
+	}
+	ud.Metatable = metaTbl
+	return ud, nil
+}
+
+func convertTblToArrayOrSlice(L *lua.LState, target reflect.Type, converted *lua.LTable, convertedRecord map[*lua.LTable]reflect.Value, fn func(reflect.Type, int) (reflect.Value, error)) (reflect.Value, error) {
+	elemType := target.Elem()
+	length := converted.Len()
+	s, err := fn(target, length)
+	if err != nil {
+		return reflect.Value{}, err
+	}
+	convertedRecord[converted] = s
+
+	for i := 0; i < length; i++ {
+		value := converted.RawGetInt(i + 1)
+		elemValue, err := getGoValueReflect(L, value, elemType, convertedRecord, nil)
+		if err != nil {
+			return reflect.Value{}, err
+		}
+		s.Index(i).Set(elemValue)
 	}
 
-	panic("never reaches")
+	return s, nil
 }
