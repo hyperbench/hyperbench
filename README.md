@@ -16,7 +16,7 @@ detail introduction : [white paper](https://upload.hyperchain.cn/HyperBench%E7%9
 
 | hyperbench version | hyperbench-plugins version |
 |--------------------|----------------------------|
-| v1.0.5             | v0.0.5                     |
+| v1.0.5+            | v0.0.5                     |
 | v1.0.4             | v0.0.4                     |
 | v1.0.3             | v0.0.3                     |
 | v1.0.2             | v0.0.2                     |
@@ -28,16 +28,16 @@ It should be noted that the current system uses go-plugin, go-plugin only suppor
 ### install packr
 ```bash
 # Go 1.16 and above
-go get -u github.com/gobuffalo/packr/v2/packr2
+go install github.com/gobuffalo/packr/v2/packr2@latest
 # Go 1.15 and below
-go get -u github.com/gobuffalo/packr/packr2
+go install github.com/gobuffalo/packr/packr2@latest
 ```
 ### Build Hyperbench from Source Code
 
 ```bash
 # clone Hyperbench repository into the $GOPATH/src/github.com/hyperbench/hyperbench directory:
 mkdir $GOPATH/src/github.com/hyperbench && cd $GOPATH/src/github.com/hyperbench
-git clone git@github.com:hyperbench/hyperbench.git
+git clone https://github.com/hyperbench/hyperbench.git
 cd hyperbench
 
 # build main program
@@ -52,7 +52,7 @@ cp hyperbench $GOPATH/bin
 ```bash
 # clone Hyperbench-plugins into the $GOPATH/src/github.com/hyperbench/hyperbench-plugins directory:
 cd $GOPATH/src/github.com/hyperbench
-git clone git@github.com:hyperbench/hyperbench-plugins.git
+git clone https://github.com/hyperbench/hyperbench-plugins.git
 
 # build hyperchain for example
 cd hyperbench-plugins/hyperchain
@@ -104,6 +104,10 @@ You may encounter a similar issue where the main repository and plugins share di
 ```text
 [blockchain][ERROR] 10:37:45.853 blockchain.go:39 plugin failed: plugin.Open("./hyperchain"): plugin was built with a different version of package golang.org/x/sys/internal/unsafeheader
 ```
+
+### Others
+HyperBench is a blockchain testing tool, the corresponding examples provided in the benchmark are for reference only. When testing the corresponding blockchain platform, the use of the corresponding blockchain platform refers to the user manual of the corresponding platform.
+
 ## Contribution
 
 Thank you for considering to help out with the source code! No matter it's a system bug report, a new feature purposal, or code contributing, we're all huge welcome.

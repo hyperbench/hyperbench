@@ -184,7 +184,7 @@ func (l *ControllerImpl) Run() (err error) {
 	wg.Wait()
 	sd, err := l.master.Statistic(l.startChainInfo, l.endChainInfo)
 	if err != nil {
-		l.logger.Notice(err)
+		l.logger.Noticef("statistic fail: %v", err)
 	}
 	if err == nil {
 		totalSent, totalMissed := int64(0), int64(0)
@@ -202,7 +202,7 @@ func (l *ControllerImpl) Run() (err error) {
 
 	l.recorder.Release()
 
-	l.logger.Notice("finish")
+	l.logger.Debugf("finish")
 	return nil
 }
 
@@ -223,7 +223,7 @@ func (l *ControllerImpl) asyncGetAllResponse(ctx context.Context, cancel context
 
 	go func() {
 		finishWg.Wait()
-		l.logger.Notice("cancel asyncGetAllResponse")
+		l.logger.Debugf("cancel asyncGetAllResponse")
 		cancel()
 	}()
 
@@ -268,9 +268,9 @@ func (l *ControllerImpl) getWorkerResponse(w *workerClient, batchWg *sync.WaitGr
 
 	col, valid, err := w.worker.CheckoutCollector()
 	if err != nil || !valid {
-		l.logger.Errorf("CheckoutCollector valid:%v, err:%v", valid, err)
+		l.logger.Debugf("CheckoutCollector valid:%v, err:%v", valid, err)
 		w.finished = true
-		l.logger.Notice("finishWg done")
+		l.logger.Debugf("finishWg done")
 		finishWg.Done()
 		batchWg.Done()
 		return
