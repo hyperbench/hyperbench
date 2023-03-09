@@ -20,7 +20,7 @@
   "devDependencies": {
     "cz-conventional-changelog": "^2.1.0",
     "ghooks": "^2.0.2",
-    "standard-version": "^4.3.0",
+    "standard-version": "^9.5.0",
     "validate-commit-msg-smart": "^1.1.2"
   },
   "config": {

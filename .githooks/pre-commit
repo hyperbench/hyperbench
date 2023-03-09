@@ -1,24 +1,18 @@
 #!/bin/bash
-set -e
 # 这里请根据实际项目进行设置
 cd $GOPATH/src/github.com/hyperbench/hyperbench
 
 st=0
 counter=0
-# if ! type golangci-lint > /dev/null; then
-#    curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh \
-#     | sh -s -- -b $(go env GOPATH)/bin v1.15.0
-#fi
-# echo "go linter"
-# ce38d637 special revision
-# CGO_LDFLAGS_ALLOW=.* CGO_CFLAGS_ALLOW=.* golangci-lint run --new-from-rev ce38d637
 
-# [ $? -ne 0 ] && exit 1
-
-# echo "go formatting"
-# find . -path '*/vendor/*' -prune -o -name '*.go' -type f -exec gofmt -s -w {} \;
+#echo "1. gofmt.."
+#find . -path '*/vendor/*' -prune -o -name '*.go' -type f -exec gofmt -s -w {} \;
 #[ $? -ne 0 ] && exit 1
 
-# add formatted files
- git add -u
+#echo "2. golangci-lint run.."
+#golangci-lint run
 
+[ $st -ne 0 ] && exit 1
+
+# add formatted files
+git add -u
