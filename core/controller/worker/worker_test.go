@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- * @brief use cobra provide cmd function
+ * @brief the unit test for worker.go
  * @file worker_test.go
  * @author: shinyxhh
  * @date 2021-11-30
