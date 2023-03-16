@@ -22,12 +22,13 @@ package server
  */
 
 import (
-	"github.com/hyperbench/hyperbench/core/utils"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/hyperbench/hyperbench/core/utils"
 
 	fcom "github.com/hyperbench/hyperbench-common/common"
 
@@ -156,6 +157,7 @@ func (s *Server) Start() error {
 	})
 
 	r.POST(network.InitPath, func(c *gin.Context) {
+		fcom.InitLog()
 		if !s.checkNonce(c) {
 			s.logger.Error("busy")
 			c.String(http.StatusUnauthorized, "busy")

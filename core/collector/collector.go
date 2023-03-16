@@ -32,7 +32,7 @@ type Collector interface {
 	Type() string
 
 	// Add append result to statistic
-	Add(*fcom.Result)
+	Add([]*fcom.Result)
 
 	// Serialize generate serialized data to pass through network in remote mode
 	Serialize() []byte

@@ -54,14 +54,14 @@ func BenchmarkTDigestCollector_Add(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		//n := rand.Int63n(1000)
-		td.Add(&fcom.Result{
+		td.Add([]*fcom.Result{{
 			Label:     "test",
 			BuildTime: 1,
 			SendTime:  int64(i),
 			//Latency: n,
 			Status: fcom.Success,
 			Ret:    nil,
-		})
+		}})
 	}
 	b.StopTimer()
 }
@@ -74,13 +74,13 @@ func BenchmarkTDigestCollector_Serialize(b *testing.B) {
 	n := 100000
 	for i := 0; i < n; i++ {
 		r := rand.Int63n(1000)
-		td.Add(&fcom.Result{
+		td.Add([]*fcom.Result{{
 			Label:     "test",
 			BuildTime: 0,
 			SendTime:  r,
 			Status:    fcom.Success,
 			Ret:       nil,
-		})
+		}})
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -97,13 +97,13 @@ func BenchmarkTDigestCollector_Merge(b *testing.B) {
 	n := 100000
 	for i := 0; i < n; i++ {
 		r := rand.Int63n(1000)
-		td.Add(&fcom.Result{
+		td.Add([]*fcom.Result{{
 			Label:     "test",
 			BuildTime: 0,
 			SendTime:  r,
 			Status:    fcom.Success,
 			Ret:       nil,
-		})
+		}})
 	}
 	bs := td.Serialize()
 
@@ -145,13 +145,13 @@ func TestTDigestDetailsCollector(t *testing.T) {
 	assert.Equal(t, col1.Type(), "details")
 	assert.Equal(t, col2.Type(), "details")
 
-	res1 := &fcom.Result{}
-	res2 := &fcom.Result{
+	res1 := []*fcom.Result{{}}
+	res2 := []*fcom.Result{{
 		BuildTime:   time.Now().UnixNano(),
 		SendTime:    time.Now().UnixNano(),
 		ConfirmTime: time.Now().UnixNano(),
 		WriteTime:   time.Now().UnixNano(),
-	}
+	}}
 
 	col1.Add(res1)
 	assert.Equal(t, len(col1.Get().Results), 1)
@@ -188,10 +188,10 @@ func TestTDigestSummaryCollector(t *testing.T) {
 	assert.Equal(t, col1.Type(), "summary")
 	assert.Equal(t, col2.Type(), "summary")
 
-	res1 := &fcom.Result{}
-	res2 := &fcom.Result{
+	res1 := []*fcom.Result{{}}
+	res2 := []*fcom.Result{{
 		BuildTime: time.Now().UnixNano(),
-	}
+	}}
 
 	col1.Add(res1)
 	assert.Equal(t, col1.(*TDigestSummaryCollector).Data.Num, 0)
