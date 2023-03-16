@@ -51,7 +51,7 @@ type LocalWorker struct {
 	wg             sync.WaitGroup
 	ctx            context.Context
 	cancel         context.CancelFunc
-	resultCh       chan *fcom.Result
+	resultCh       chan []*fcom.Result
 	done           chan struct{}
 	colRet         chan collector.Collector
 	colReq         chan struct{}
@@ -77,7 +77,7 @@ func NewLocalWorker(config LocalWorkerConfig) (*LocalWorker, error) {
 
 	localWorker := LocalWorker{
 		collector:      collector.NewTDigestSummaryCollector(),
-		resultCh:       make(chan *fcom.Result, 1024),
+		resultCh:       make(chan []*fcom.Result, 1024),
 		done:           make(chan struct{}),
 		colReq:         make(chan struct{}),
 		colRet:         make(chan collector.Collector),
@@ -243,6 +243,19 @@ func (l *LocalWorker) run(v vm.VM) {
 		Context: l.ctx,
 		TxIndex: l.atomicAddIndex(),
 	}
+
+	if v.IsRunBatch() {
+		results, err := v.RunBatch(txContext)
+		if err != nil {
+			return
+		}
+		// if enable verification and this tx is chosen, verify the tx
+		if l.txInterval > 0 && l.verifyIndexMap[txContext.TxIdx] {
+			l.verifyVM.VerifyBatch(results...)
+		}
+		l.resultCh <- results
+		return
+	}
 	res, err := v.Run(txContext)
 	if err != nil {
 		return
@@ -251,7 +264,7 @@ func (l *LocalWorker) run(v vm.VM) {
 	if l.txInterval > 0 && l.verifyIndexMap[txContext.TxIdx] {
 		l.verifyVM.Verify(res)
 	}
-	l.resultCh <- res
+	l.resultCh <- []*fcom.Result{res}
 }
 
 func (l *LocalWorker) atomicAddIndex() (idx fcom.TxIndex) {

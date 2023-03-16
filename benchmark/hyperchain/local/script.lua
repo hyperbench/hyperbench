@@ -16,4 +16,27 @@ function case:Run()
     return ret
 end
 
+function case:RunBatch()
+    local ret = case.blockchain:TransferBatch(
+    {
+        From = "0",
+        To = "1",
+        Amount = 0,
+        Extra = tostring(case.index.Tx),
+    },
+    {
+            From = "0",
+            To = "1",
+            Amount = 0,
+            Extra = tostring(case.index.Tx),
+    },
+    {
+            From = "0",
+            To = "1",
+            Amount = 0,
+            Extra = tostring(case.index.Tx),
+    })
+    return ret
+end
+
 return case
