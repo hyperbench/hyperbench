@@ -2,9 +2,9 @@
 
 # 第一章 环境安装
 需要注意的是目前系统使用go-plugin，go-plugin只支持macOS以及Linux系统，Windows系统尚不支持。
-## 编译安装-Go环境与Hyperbench
+## 编译安装-Go环境与hyperbench
 
-Hyperbench基于Go语言开发，因此需要在系统中安装golang开发环境。安装方式主要有3种：
+hyperbench基于Go语言开发，因此需要在系统中安装golang开发环境。安装方式主要有3种：
 
 ### 源码安装Golang
 
@@ -76,9 +76,9 @@ brew update && brew upgrade
 brew install go
 ```
 
-### 编译安装最新的`Hyperbench`
+### 编译安装最新的`hyperbench`
 
-安装Hyperbench也有多种方式，任选其一即可。
+安装hyperbench也有多种方式，任选其一即可。
 
 **注意编译需要要求go版本1.11+**
 
@@ -111,7 +111,7 @@ make build
 ```
 
 编译后会生成二进制文件`hyperbench`，可以按照说明进行运行，推荐将`hyperbench`放到`/usr/local/bin`或者`$GOPATH/bin`目录下，方便使用。
-### 编译区块链适配插件`Hyperbench-plugins`
+### 编译区块链适配插件`hyperbench-plugins`
 下载源码
 ``` text
 git clone https://github.com/hyperbench/hyperbench-plugins.git
@@ -122,7 +122,7 @@ cd hyperbench-plugins/hyperchain
 # 编译插件,插件名称在配置阶段需要使用
 make build
 ```
-[注意]Hyperbench与Hyperbench-plugins须使用同一系统下的编译二进制，且使用统一go版本进行编译
+[注意]hyperbench与hyperbench-plugins须使用同一系统下的编译二进制，且使用统一go版本进行编译
 # 第二章 使用与配置
 
 第二章中的命令默认您已经将hyperbench安装到了`/usr/local/bin`或者`$GOPATH/bin`目录下了，如果您没有安装hyperbench，也可以将其当做一个普通的二进制文件使用`./hyperbench [cmd]`进行各种操作，此时必须确保在目录文件夹下含有hyperbench二进制文件。
