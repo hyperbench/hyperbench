@@ -1,4 +1,4 @@
-# HyperBench
+# hyperbench
 
 hyperbench is a distributed stress testing tool, used to perform stress testing on blockchain platforms, written by go.
 
@@ -32,10 +32,10 @@ go install github.com/gobuffalo/packr/v2/packr2@latest
 # Go 1.15 and below
 go install github.com/gobuffalo/packr/packr2@latest
 ```
-### Build Hyperbench from Source Code
+### Build hyperbench from Source Code
 
 ```bash
-# clone Hyperbench repository into the $GOPATH/src/github.com/hyperbench/hyperbench directory:
+# clone hyperbench repository into the $GOPATH/src/github.com/hyperbench/hyperbench directory:
 mkdir $GOPATH/src/github.com/hyperbench && cd $GOPATH/src/github.com/hyperbench
 git clone https://github.com/hyperbench/hyperbench.git
 cd hyperbench
@@ -50,7 +50,7 @@ cp hyperbench $GOPATH/bin
 ### Build plugins from Source Code
 
 ```bash
-# clone Hyperbench-plugins into the $GOPATH/src/github.com/hyperbench/hyperbench-plugins directory:
+# clone hyperbench-plugins into the $GOPATH/src/github.com/hyperbench/hyperbench-plugins directory:
 cd $GOPATH/src/github.com/hyperbench
 git clone https://github.com/hyperbench/hyperbench-plugins.git
 
@@ -60,7 +60,7 @@ make build
 cp hyperchain.so ../../hyperbench/hyperchain.so
 ```
 
-### Run HyperBench for Hyperchain
+### Run hyperbench for Hyperchain
 
 Before start stess test, docker and docker-compose are needed to be installed before preparing a hyperchian network.
 1. start hyperchain network
@@ -79,7 +79,7 @@ cd $GOPATH/src/github.com/hyperbench/hyperbench
 hyperbench start benchmark/hyperchain/local
 ```
 
-### Run HyperBench for Fabric
+### Run hyperbench for Fabric
 
 Before start stess test, docker and docker-compose are needed to be installed before preparing a fabric network.
 1. start fabric network
@@ -106,7 +106,7 @@ You may encounter a similar issue where the main repository and plugins share di
 ```
 
 ### Others
-HyperBench is a blockchain testing tool, the corresponding examples provided in the benchmark are for reference only. When testing the corresponding blockchain platform, the use of the corresponding blockchain platform refers to the user manual of the corresponding platform.
+hyperbench is a blockchain testing tool, the corresponding examples provided in the benchmark are for reference only. When testing the corresponding blockchain platform, the use of the corresponding blockchain platform refers to the user manual of the corresponding platform.
 
 ## Contribution
 
@@ -116,4 +116,4 @@ Please check the contributing guide for the full details.
 
 ## License
 
-Hyperbench is currently under Apache 2.0 license. See the LICENSE file for details.
+hyperbench is currently under Apache 2.0 license. See the LICENSE file for details.

@@ -3,7 +3,7 @@ on: [push,pull_request]
 jobs:
   lint:
     name: Golangci-lint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.15
         uses: actions/setup-go@v2
@@ -21,7 +21,7 @@ jobs:
 
   test:
     name: Unit Testing
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.17
         uses: actions/setup-go@v2
