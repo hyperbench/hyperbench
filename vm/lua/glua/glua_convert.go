@@ -213,7 +213,13 @@ func getGoValueReflect(L *lua.LState, v lua.LValue, target reflect.Type, convert
 	}
 
 	switch converted := v.(type) {
-	case lua.LBool, lua.LNumber, *lua.LState, lua.LString:
+	case lua.LString:
+		val := reflect.ValueOf(string(converted))
+		if !val.Type().ConvertibleTo(target) {
+			return reflect.Value{}, invalidTypeErr(v, target)
+		}
+		return val.Convert(target), nil
+	case lua.LBool, lua.LNumber, *lua.LState:
 		return convertToTargetType(converted, target, v)
 	case *lua.LNilType:
 		switch target.Kind() {

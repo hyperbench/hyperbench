@@ -111,4 +111,7 @@ replace golang.org/x/crypto => golang.org/x/crypto v0.0.0-20210921155107-089bfa5
 
 replace golang.org/x/sys => github.com/golang/sys v0.0.0-20220722155257-8c9f86f7a55f
 
+replace google.golang.org/grpc => google.golang.org/grpc v1.29.1
+
+
 go 1.17
