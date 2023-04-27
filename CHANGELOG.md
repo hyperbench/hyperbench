@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.9...v1.1.0) (2023-04-27)
+
+
+### Bug Fixes
+
+* **go.mod:** set google.golang.org/grpc version for fix [#49](null/git.hyperchain.cn/hyperchain/hyperchain/issues/49) ([ebb3968](/git.hyperchain.cn/hyperchain/hyperchain/commit/ebb3968c14331723c04d30f8438aae56185c8099))
+
 ### [1.0.9](/git.hyperchain.cn/hyperchain/hyperchain/compare/v1.0.8...v1.0.9) (2023-03-09)
 
 <a name="1.0.8"></a>
