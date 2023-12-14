@@ -29,7 +29,8 @@ export GO111MODULE=on
 all: build
 
 ## build: build the binary with pre-packed static resource
-build: dep assets
+#build: dep assets
+build: assets
 	@export GOPROXY=https://goproxy.cn,direct
 	@packr2 build -o $(BINARY_NAME) -trimpath -ldflags "${ldflags}"
 	@-rm -rf $(ASSETS)

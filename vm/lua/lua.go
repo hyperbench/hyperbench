@@ -23,7 +23,6 @@ package lua
 
 import (
 	"errors"
-	errors2 "github.com/pkg/errors"
 
 	base2 "github.com/hyperbench/hyperbench-common/base"
 	fcom "github.com/hyperbench/hyperbench-common/common"
@@ -32,6 +31,7 @@ import (
 	"github.com/hyperbench/hyperbench/plugins/toolkit"
 	"github.com/hyperbench/hyperbench/vm/base"
 	"github.com/hyperbench/hyperbench/vm/lua/glua"
+	errors2 "github.com/pkg/errors"
 	"github.com/spf13/viper"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -46,6 +46,8 @@ type VM struct {
 	client   fcom.Blockchain
 
 	index *idex.Index
+
+	runBatch bool
 }
 
 // Type return the type of vm
@@ -79,7 +81,6 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	if err != nil {
 		return nil, errors2.Wrap(err, "load script fail")
 	}
-
 	// get test
 	var ok bool
 	vm.instance, ok = vm.vm.Get(-1).(*lua.LTable)
@@ -88,6 +89,9 @@ func NewVM(base *base.VMBase) (vm *VM, err error) {
 	}
 	vm.vm.Pop(1)
 
+	vm.runBatch = vm.instance.RawGetString(runBatch) != lua.LNil
+
+	vm.Logger.Debugf("runBatch:%v", vm.runBatch)
 	return vm, nil
 }
 
@@ -102,7 +106,9 @@ const (
 	setContext = "SetContext"
 	beforeRun  = "BeforeRun"
 	run        = "Run"
+	runBatch   = "RunBatch"
 	afterRun   = "AfterRun"
+	closeBlock = "Close"
 )
 
 // builtin
@@ -155,13 +161,7 @@ func (v *VM) injectTestcaseBase() {
 
 // BeforeDeploy will call before deploy contract.
 func (v *VM) BeforeDeploy() error {
-	fn := v.instance.RawGetString(beforeDeploy)
-	if fn != lua.LNil {
-		return v.vm.CallByParam(lua.P{
-			Fn: fn,
-		}, v.instance)
-	}
-	return nil
+	return v.callInVm(beforeDeploy)
 }
 
 // DeployContract deploy contract.
@@ -171,13 +171,7 @@ func (v *VM) DeployContract() error {
 
 // BeforeGet will call before get context.
 func (v *VM) BeforeGet() error {
-	fn := v.instance.RawGetString(beforeGet)
-	if fn != lua.LNil {
-		return v.vm.CallByParam(lua.P{
-			Fn: fn,
-		}, v.instance)
-	}
-	return nil
+	return v.callInVm(beforeGet)
 }
 
 // GetContext generate context for execute tx in vm.
@@ -205,9 +199,18 @@ func (v *VM) Verify(res *fcom.Result, ops ...fcom.Option) *fcom.Result {
 	return v.client.Verify(res)
 }
 
+// VerifyBatch check the relative time of txs
+func (v *VM) VerifyBatch(res ...*fcom.Result) []*fcom.Result {
+	return v.client.VerifyBatch(res...)
+}
+
 // BeforeSet will call before set context.
 func (v *VM) BeforeSet() error {
-	fn := v.instance.RawGetString(beforeSet)
+	return v.callInVm(beforeSet)
+}
+
+func (v *VM) callInVm(methodName string) error {
+	fn := v.instance.RawGetString(methodName)
 	if fn != lua.LNil {
 		return v.vm.CallByParam(lua.P{
 			Fn: fn,
@@ -223,56 +226,52 @@ func (v *VM) SetContext(ctx []byte) error {
 
 // BeforeRun will call once before run.
 func (v *VM) BeforeRun() error {
-	fn := v.instance.RawGetString(beforeRun)
-	if fn != lua.LNil {
-		return v.vm.CallByParam(lua.P{
-			Fn: fn,
-		}, v.instance)
-	}
-	return nil
+	return v.callInVm(beforeRun)
 }
 
 // Run create and send tx to client.
 func (v *VM) Run(ctx fcom.TxContext) (*fcom.Result, error) {
-	v.index.Engine = ctx.EngineIdx
-	v.index.Tx = ctx.TxIdx
-
-	err := v.vm.CallByParam(lua.P{
-		Fn:      v.instance.RawGetString(run),
-		NRet:    1,
-		Protect: false,
-	}, v.instance)
-
+	ud, err := v.run(ctx, run)
 	if err != nil {
-		v.Logger.Error(err)
 		return nil, err
-	}
-	val := v.vm.Get(-1)
-	v.vm.Pop(1)
-	ud, ok := val.(*lua.LUserData)
-	if !ok {
-		return nil, errors.New("returned val is not user data")
 	}
 	res, ok := ud.Value.(*fcom.Result)
 	if !ok {
+		v.Logger.Debugf("returned user data is not result")
 		return nil, errors.New("returned user data is not result")
+	}
+	return res, nil
+}
+
+func (v *VM) IsRunBatch() bool {
+	return v.runBatch
+}
+
+func (v *VM) RunBatch(ctx fcom.TxContext) ([]*fcom.Result, error) {
+	ud, err := v.run(ctx, runBatch)
+	if err != nil {
+		return nil, err
+	}
+	res, ok := ud.Value.([]*fcom.Result)
+	if !ok {
+		v.Logger.Debugf("returned user data is not result")
+		return nil, errors.New("returned user data is not []*result")
 	}
 	return res, nil
 }
 
 // AfterRun will call once after run.
 func (v *VM) AfterRun() error {
-	fn := v.instance.RawGetString(afterRun)
-	if fn != lua.LNil {
-		return v.vm.CallByParam(lua.P{
-			Fn: fn,
-		}, v.instance)
-	}
-	return nil
+	return v.callInVm(afterRun)
 }
 
 // Close close vm.
 func (v *VM) Close() {
+	v.client.Close()
+	err := v.callInVm(closeBlock)
+	if err != nil {
+		v.Logger.Errorf("close err:%v", err)
+	}
 	v.vm.Close()
 }
 
@@ -293,6 +292,7 @@ func (v *VM) setPlugins(table *lua.LTable) (err error) {
 	})
 
 	if err != nil {
+		v.Logger.Errorf("NewBlockchain fail:%v", err)
 		return err
 	}
 
@@ -304,4 +304,28 @@ func (v *VM) setPlugins(table *lua.LTable) (err error) {
 	v.vm.SetField(table, index, lIndex)
 
 	return nil
+}
+
+func (v *VM) run(ctx fcom.TxContext, funcName string) (*lua.LUserData, error) {
+	v.index.Engine = ctx.EngineIdx
+	// todo：批量发送时，txIndex有问题
+	v.index.Tx = ctx.TxIdx
+
+	err := v.vm.CallByParam(lua.P{
+		Fn:      v.instance.RawGetString(funcName),
+		NRet:    1,
+		Protect: false,
+	}, v.instance)
+
+	if err != nil {
+		v.Logger.Error(err)
+		return nil, err
+	}
+	val := v.vm.Get(-1)
+	v.vm.Pop(1)
+	ud, ok := val.(*lua.LUserData)
+	if !ok {
+		return nil, errors.New("returned val is not user data")
+	}
+	return ud, nil
 }

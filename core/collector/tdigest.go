@@ -165,16 +165,18 @@ func newTDigestDetailsCollector() *TDigestDetailsCollector {
 }
 
 // Add append result to statistic
-func (t *TDigestDetailsCollector) Add(result *fcom.Result) {
-	var (
-		cur   *Details
-		exist bool
-	)
-	if cur, exist = t.Data[result.Label]; !exist {
-		cur = NewDetails(result.Label)
-		t.Data[result.Label] = cur
+func (t *TDigestDetailsCollector) Add(results []*fcom.Result) {
+	for _, result := range results {
+		var (
+			cur   *Details
+			exist bool
+		)
+		if cur, exist = t.Data[result.Label]; !exist {
+			cur = NewDetails(result.Label)
+			t.Data[result.Label] = cur
+		}
+		cur.add(result)
 	}
-	cur.add(result)
 }
 
 // Type return the types of collector
@@ -264,8 +266,10 @@ func NewTDigestSummaryCollector() Collector {
 }
 
 // Add append result to statistic
-func (t *TDigestSummaryCollector) Add(result *fcom.Result) {
-	t.Data.add(result)
+func (t *TDigestSummaryCollector) Add(results []*fcom.Result) {
+	for _, result := range results {
+		t.Data.add(result)
+	}
 }
 
 // Serialize generate serialized data to pass through network in remote mode

@@ -22,13 +22,14 @@ package vmpool
  */
 
 import (
+	"path"
+	"strings"
+	"sync"
+
 	fcom "github.com/hyperbench/hyperbench-common/common"
 	"github.com/hyperbench/hyperbench/core/utils"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
-	"path"
-	"strings"
-	"sync"
 
 	"github.com/hyperbench/hyperbench/vm"
 	"github.com/hyperbench/hyperbench/vm/base"
@@ -110,10 +111,12 @@ func (i *PoolImp) AsyncWalk(wf func(v vm.VM) bool) {
 
 func (i *PoolImp) Close() {
 	for _, wvm := range i.vms {
-		wvm.vm.Close()
 		close(wvm.ch)
 	}
 	i.wg.Wait()
+	for _, wvm := range i.vms {
+		wvm.vm.Close()
+	}
 }
 
 func NewPoolImp(workerID int64, tps, cap int64, job func(v vm.VM)) (*PoolImp, error) {
@@ -139,6 +142,7 @@ func NewPoolImp(workerID int64, tps, cap int64, job func(v vm.VM)) (*PoolImp, er
 	for i = 0; i < cap; i++ {
 		nvm, err := vm.NewVM(t, configBase)
 		if err != nil {
+			p.log.Errorf("new vm fail:%v", err)
 			return nil, err
 		}
 		configBase.Ctx.VMIdx++

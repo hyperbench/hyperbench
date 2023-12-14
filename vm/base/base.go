@@ -77,6 +77,10 @@ func (v *VMBase) Verify(*fcom.Result, ...fcom.Option) *fcom.Result {
 	return nil
 }
 
+func (v *VMBase) VerifyBatch(res ...*fcom.Result) []*fcom.Result {
+	return nil
+}
+
 // BeforeSet will call before set context.
 func (v *VMBase) BeforeSet() error {
 	return nil
@@ -95,6 +99,13 @@ func (v *VMBase) BeforeRun() error {
 // Run create and send tx to client.
 func (v *VMBase) Run(ctx fcom.TxContext) (*fcom.Result, error) {
 	return &fcom.Result{}, nil
+}
+
+func (v *VMBase) IsRunBatch() bool { return false }
+
+// RunBatch create and send batch tx to client.
+func (v *VMBase) RunBatch(ctx fcom.TxContext) ([]*fcom.Result, error) {
+	return []*fcom.Result{{}}, nil
 }
 
 // AfterRun will call once after run.

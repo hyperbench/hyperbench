@@ -208,6 +208,7 @@ return case
 			WorkerIdx: 0,
 			VMIdx:     1,
 		},
+		Path: scriptPath,
 	}
 
 	vm, _ := NewVM(base.NewVMBase(configBase))
