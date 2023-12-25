@@ -1,0 +1,20 @@
+[Network]
+#type rpc or channel
+Type="channel"
+CAFile="./benchmark/fisco-bcos/invoke/fisco-bcos/ca.crt"
+Cert="./benchmark/fisco-bcos/invoke/fisco-bcos/sdk.crt"
+Key="./benchmark/fisco-bcos/invoke/fisco-bcos/sdk.key"
+[[Network.Connection]]
+NodeURL="127.0.0.1:20200"
+GroupID=1
+# [[Network.Connection]]
+# NodeURL="127.0.0.1:20200"
+# GroupID=2
+
+[Account]
+# only support PEM format for now
+KeyFile="./benchmark/fisco-bcos/invoke/fisco-bcos/accounts/0x48eac900f9e862c94e1e38ec205b6a991a349217.pem"
+
+[Chain]
+ChainID=1
+SMCrypto=false
